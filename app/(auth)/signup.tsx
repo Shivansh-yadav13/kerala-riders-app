@@ -125,8 +125,10 @@ export default function RegisterScreen() {
         </View>
 
         {/* Sign Up Button */}
-        <TouchableOpacity style={styles.signUpButton} onPress={handleSignUp}>
-          <Text style={styles.signUpButtonText}>Sign Up</Text>
+        <TouchableOpacity style={styles.signUpButton}>
+          <Link href="/(auth)/user-info" asChild>
+            <Text style={styles.signUpButtonText}>Sign Up</Text>
+          </Link>
         </TouchableOpacity>
 
         {/* Already have account */}
