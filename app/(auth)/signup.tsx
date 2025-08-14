@@ -9,6 +9,7 @@ import {
 import { ThemedView } from "@/components/ThemedView";
 import { useAuth } from "@/hooks/useAuth";
 import { authHelpers } from "@/lib/auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Link, router } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -41,23 +42,23 @@ export default function RegisterScreen() {
 
   const handleSignUp = async () => {
     clearError();
-    
-    if (!fullName || !email || !password) {
+
+    if (!fullName || !email) {
       Alert.alert("Error", "Please fill in all fields");
       return;
     }
-    
+
     if (!authHelpers.validateEmail(email)) {
       Alert.alert("Error", "Please enter a valid email address");
       return;
     }
-    
+
     const passwordValidation = authHelpers.validatePassword(password);
     if (!passwordValidation.valid) {
-      Alert.alert("Error", passwordValidation.errors.join('\n'));
+      Alert.alert("Error", passwordValidation.errors.join("\n"));
       return;
     }
-    
+
     if (!agreeToTerms) {
       Alert.alert("Error", "Please agree to the Terms & Conditions");
       return;
@@ -76,15 +77,25 @@ export default function RegisterScreen() {
       kerala_district: null,
     };
 
-    const { user, error: signUpError } = await signUp(email, password, userData);
-    
-    if (signUpError) {
-      Alert.alert("Sign Up Error", authHelpers.formatAuthError(signUpError));
+    // const { data, error } = await supabase.auth.signInWithOtp({
+    //   email,
+    //   options: {
+    //     data: userData,
+    //   },
+    // });
+
+    const { user, error } = await signUp(email, password, userData);
+
+    if (error) {
+      Alert.alert("Sign Up Error", authHelpers.formatAuthError(error));
       return;
     }
 
     if (user) {
-      router.push("/(auth)/user-info");
+      await AsyncStorage.setItem("pending_verification_email", email);
+      setTimeout(() => {
+        router.push("/(auth)/email-verification");
+      }, 2000);
     }
   };
 

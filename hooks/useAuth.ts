@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { useAuthStore } from '@/stores/auth';
+import { useAuthStore } from "@/stores/auth";
+import { useEffect } from "react";
 
 export const useAuth = () => {
   const store = useAuthStore();
@@ -19,6 +19,8 @@ export const useAuth = () => {
     isAuthenticated: !!store.user && !!store.session,
     signUp: store.signUp,
     signIn: store.signIn,
+    signInOTPVerification: store.signInOTPVerification,
+    resendOTP: store.resendOTP,
     signOut: store.signOut,
     resetPassword: store.resetPassword,
     updateProfile: store.updateProfile,
@@ -27,43 +29,41 @@ export const useAuth = () => {
   };
 };
 
-export const useAuthActions = () => {
-  const {
-    signUp,
-    signIn,
-    signOut,
-    resetPassword,
-    updateProfile,
-    refreshSession,
-    clearError,
-  } = useAuthStore();
+// export const useAuthActions = () => {
+//   const {
+//     signUp,
+//     signIn,
+//     signInOTPVerification,
+//     resendOTP,
+//     signOut,
+//     resetPassword,
+//     updateProfile,
+//     refreshSession,
+//     clearError,
+//   } = useAuthStore();
 
-  return {
-    signUp,
-    signIn,
-    signOut,
-    resetPassword,
-    updateProfile,
-    refreshSession,
-    clearError,
-  };
-};
+//   return {
+//     signUp,
+//     signIn,
+//     signInOTPVerification,
+//     resendOTP,
+//     signOut,
+//     resetPassword,
+//     updateProfile,
+//     refreshSession,
+//     clearError,
+//   };
+// };
 
-export const useAuthState = () => {
-  const {
-    user,
-    session,
-    loading,
-    initialized,
-    error,
-  } = useAuthStore();
+// export const useAuthState = () => {
+//   const { user, session, loading, initialized, error } = useAuthStore();
 
-  return {
-    user,
-    session,
-    loading,
-    initialized,
-    error,
-    isAuthenticated: !!user && !!session,
-  };
-};
+//   return {
+//     user,
+//     session,
+//     loading,
+//     initialized,
+//     error,
+//     isAuthenticated: !!user && !!session,
+//   };
+// };

@@ -1,9 +1,10 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { supabase } from './supabase';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { supabase } from "./supabase";
 
 export const AUTH_KEYS = {
-  SESSION: 'supabase-session',
-  USER: 'supabase-user',
+  SESSION: "supabase-session",
+  USER: "supabase-user",
+  PENDING_VERIFICATION_EMAIL: "pending_verification_email",
 } as const;
 
 export interface SessionData {
@@ -18,17 +19,17 @@ export const authHelpers = {
     try {
       const sessionJson = await AsyncStorage.getItem(AUTH_KEYS.SESSION);
       if (!sessionJson) return null;
-      
+
       const session = JSON.parse(sessionJson);
-      
+
       if (session.expires_at && Date.now() > session.expires_at * 1000) {
         await this.clearStoredSession();
         return null;
       }
-      
+
       return session;
     } catch (error) {
-      console.error('Error getting stored session:', error);
+      console.error("Error getting stored session:", error);
       return null;
     }
   },
@@ -41,10 +42,13 @@ export const authHelpers = {
         expires_at: session.expires_at,
         user_id: session.user?.id,
       };
-      
-      await AsyncStorage.setItem(AUTH_KEYS.SESSION, JSON.stringify(sessionData));
+
+      await AsyncStorage.setItem(
+        AUTH_KEYS.SESSION,
+        JSON.stringify(sessionData)
+      );
     } catch (error) {
-      console.error('Error storing session:', error);
+      console.error("Error storing session:", error);
     }
   },
 
@@ -52,16 +56,19 @@ export const authHelpers = {
     try {
       await AsyncStorage.multiRemove([AUTH_KEYS.SESSION, AUTH_KEYS.USER]);
     } catch (error) {
-      console.error('Error clearing stored session:', error);
+      console.error("Error clearing stored session:", error);
     }
   },
 
   async isSessionValid(): Promise<boolean> {
     try {
-      const { data: { session }, error } = await supabase.auth.getSession();
+      const {
+        data: { session },
+        error,
+      } = await supabase.auth.getSession();
       return !error && !!session;
     } catch (error) {
-      console.error('Error checking session validity:', error);
+      console.error("Error checking session validity:", error);
       return false;
     }
   },
@@ -71,7 +78,7 @@ export const authHelpers = {
       const storedSession = await this.getStoredSession();
       if (!storedSession) return false;
 
-      const timeUntilExpiry = (storedSession.expires_at * 1000) - Date.now();
+      const timeUntilExpiry = storedSession.expires_at * 1000 - Date.now();
       const shouldRefresh = timeUntilExpiry < 5 * 60 * 1000;
 
       if (shouldRefresh) {
@@ -90,14 +97,16 @@ export const authHelpers = {
 
       return true;
     } catch (error) {
-      console.error('Error refreshing session:', error);
+      console.error("Error refreshing session:", error);
       return false;
     }
   },
 
   async handleAuthError(error: any): Promise<void> {
-    if (error?.message?.includes('refresh_token_not_found') || 
-        error?.message?.includes('invalid_grant')) {
+    if (
+      error?.message?.includes("refresh_token_not_found") ||
+      error?.message?.includes("invalid_grant")
+    ) {
       await this.clearStoredSession();
     }
   },
@@ -109,23 +118,23 @@ export const authHelpers = {
 
   validatePassword(password: string): { valid: boolean; errors: string[] } {
     const errors: string[] = [];
-    
+
     if (password.length < 8) {
-      errors.push('Password must be at least 8 characters long');
+      errors.push("Password must be at least 8 characters long");
     }
-    
+
     if (!/(?=.*[a-z])/.test(password)) {
-      errors.push('Password must contain at least one lowercase letter');
+      errors.push("Password must contain at least one lowercase letter");
     }
-    
+
     if (!/(?=.*[A-Z])/.test(password)) {
-      errors.push('Password must contain at least one uppercase letter');
+      errors.push("Password must contain at least one uppercase letter");
     }
-    
+
     if (!/(?=.*\d)/.test(password)) {
-      errors.push('Password must contain at least one number');
+      errors.push("Password must contain at least one number");
     }
-    
+
     return {
       valid: errors.length === 0,
       errors,
@@ -133,20 +142,65 @@ export const authHelpers = {
   },
 
   formatAuthError(error: any): string {
-    if (typeof error === 'string') return error;
+    if (typeof error === "string") return error;
     if (error?.message) return error.message;
-    
+
     switch (error?.code || error?.status) {
-      case 'email_not_confirmed':
-        return 'Please check your email and click the verification link';
-      case 'invalid_credentials':
-        return 'Invalid email or password';
-      case 'too_many_requests':
-        return 'Too many attempts. Please try again later';
-      case 'user_already_registered':
-        return 'An account with this email already exists';
+      case "email_not_confirmed":
+        return "Please check your email and click the verification link";
+      case "invalid_credentials":
+        return "Invalid email or password";
+      case "too_many_requests":
+        return "Too many attempts. Please try again later";
+      case "user_already_registered":
+        return "An account with this email already exists";
+      case "token_expired":
+        return "Verification code has expired. Please request a new one";
+      case "invalid_token":
+        return "Invalid verification code. Please check and try again";
       default:
-        return 'An unexpected error occurred. Please try again';
+        return "An unexpected error occurred. Please try again";
     }
   },
+
+  // validateOTP(otp: string): { valid: boolean; error?: string } {
+  //   if (!otp || otp.trim().length === 0) {
+  //     return { valid: false, error: 'OTP is required' };
+  //   }
+
+  //   if (otp.length !== 6) {
+  //     return { valid: false, error: 'OTP must be 6 digits' };
+  //   }
+
+  //   if (!/^\d{6}$/.test(otp)) {
+  //     return { valid: false, error: 'OTP must contain only numbers' };
+  //   }
+
+  //   return { valid: true };
+  // },
+
+  // async storePendingVerificationEmail(email: string): Promise<void> {
+  //   try {
+  //     await AsyncStorage.setItem(AUTH_KEYS.PENDING_VERIFICATION_EMAIL, email);
+  //   } catch (error) {
+  //     console.error("Error storing pending verification email:", error);
+  //   }
+  // },
+
+  // async getPendingVerificationEmail(): Promise<string | null> {
+  //   try {
+  //     return await AsyncStorage.getItem(AUTH_KEYS.PENDING_VERIFICATION_EMAIL);
+  //   } catch (error) {
+  //     console.error("Error getting pending verification email:", error);
+  //     return null;
+  //   }
+  // },
+
+  // async clearPendingVerificationEmail(): Promise<void> {
+  //   try {
+  //     await AsyncStorage.removeItem(AUTH_KEYS.PENDING_VERIFICATION_EMAIL);
+  //   } catch (error) {
+  //     console.error("Error clearing pending verification email:", error);
+  //   }
+  // },
 };

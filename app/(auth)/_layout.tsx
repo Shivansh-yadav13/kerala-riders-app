@@ -11,13 +11,13 @@ export default function AuthLayout() {
         }}
       />
       <Stack.Screen
-        name="user-info"
+        name="email-verification"
         options={{
           headerShown: false,
         }}
       />
       <Stack.Screen
-        name="email-verification"
+        name="user-info"
         options={{
           headerShown: false,
         }}

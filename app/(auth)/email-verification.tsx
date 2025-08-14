@@ -1,7 +1,8 @@
 import { CustomTextInput } from "@/components/CustomTextInput";
 import { ThemedView } from "@/components/ThemedView";
 import { useAuth } from "@/hooks/useAuth";
-import { Link } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   Alert,
@@ -14,22 +15,88 @@ import {
 
 export default function EmailVerificationScreen() {
   const [verificationCode, setVerificationCode] = useState("");
-  const { user } = useAuth();
+  const [email, setEmail] = useState("");
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const { signInOTPVerification, resendOTP } = useAuth();
 
   useEffect(() => {
-    if (!user) return;
-    const isEmailVerified = user.user_metadata.is_email_verified;
-    if (!isEmailVerified) {
-    }
-  }, [user]);
+    // Get stored email from signup
+    const getStoredEmail = async () => {
+      try {
+        const storedEmail = await AsyncStorage.getItem(
+          "pending_verification_email"
+        );
+        if (storedEmail) {
+          setEmail(storedEmail);
+        } else {
+          router.push("/(auth)/signup");
+        }
+      } catch (error) {
+        console.error("Error getting stored email:", error);
+      }
+    };
 
-  const handleVerify = () => {
-    if (!verificationCode) {
+    getStoredEmail();
+  }, []);
+
+  useEffect(() => {
+    // Countdown timer for resend
+    if (resendCooldown > 0) {
+      const timer = setTimeout(() => {
+        setResendCooldown(resendCooldown - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendCooldown]);
+
+  const handleVerify = async () => {
+    if (!verificationCode.trim()) {
       Alert.alert("Error", "Please enter the verification code");
       return;
     }
-    // Handle verification logic
-    console.log("Verification code:", verificationCode);
+
+    if (verificationCode.length !== 6) {
+      Alert.alert("Error", "Verification code must be 6 digits");
+      return;
+    }
+
+    try {
+      const { user, error } = await signInOTPVerification(
+        email,
+        verificationCode
+      );
+
+      if (error) {
+        Alert.alert("Verification Failed", error.message);
+        return;
+      }
+
+      if (user) {
+        // Clear stored email
+        await AsyncStorage.removeItem("pending_verification_email");
+        Alert.alert("Success", "Email verified successfully!");
+        router.push("/(auth)/user-info");
+      }
+    } catch (err) {
+      Alert.alert("Error");
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendOTP = async () => {
+    if (resendCooldown > 0) return;
+
+    const { error } = await resendOTP(email);
+
+    if (error) {
+      Alert.alert("Error", error.message);
+    } else {
+      Alert.alert("Success", "Verification code sent to your email");
+      setResendCooldown(60); // 60 second cooldown
+    }
   };
 
   return (
@@ -47,26 +114,55 @@ export default function EmailVerificationScreen() {
           <View style={styles.verificationSection}>
             <Text style={styles.sectionTitle}>Email Verification</Text>
             <Text style={styles.description}>
-              We have sent you an OTP on your registered email, please enter the
-              code to continue.
+              We have sent you an OTP to {email}. Please enter the 6-digit code
+              to continue.
             </Text>
 
             {/* Verification Code Input */}
             <CustomTextInput
-              placeholder="550 123 4567"
+              label="Verification Code"
+              placeholder="000000"
               value={verificationCode}
               onChangeText={setVerificationCode}
               keyboardType="numeric"
               maxLength={6}
               containerStyle={styles.inputContainer}
             />
+
+            {/* Resend OTP */}
+            <TouchableOpacity
+              style={[
+                styles.resendButton,
+                resendCooldown > 0 && styles.resendButtonDisabled,
+              ]}
+              onPress={handleResendOTP}
+              disabled={resendCooldown > 0 || loading}
+            >
+              <Text
+                style={[
+                  styles.resendText,
+                  resendCooldown > 0 && styles.resendTextDisabled,
+                ]}
+              >
+                {resendCooldown > 0
+                  ? `Resend in ${resendCooldown}s`
+                  : "Resend OTP"}
+              </Text>
+            </TouchableOpacity>
           </View>
 
           {/* Verify Button */}
-          <TouchableOpacity style={styles.verifyButton} onPress={handleVerify}>
-            <Link href={"/(auth)/mobile-verification"}>
-              <Text style={styles.verifyButtonText}>Verify</Text>
-            </Link>
+          <TouchableOpacity
+            style={[
+              styles.verifyButton,
+              loading && styles.verifyButtonDisabled,
+            ]}
+            onPress={handleVerify}
+            disabled={loading}
+          >
+            <Text style={styles.verifyButtonText}>
+              {loading ? "Verifying..." : "Verify"}
+            </Text>
           </TouchableOpacity>
         </View>
       </ThemedView>
@@ -132,5 +228,24 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 18,
     fontWeight: "600",
+  },
+  verifyButtonDisabled: {
+    backgroundColor: "#9CA3AF",
+  },
+  resendButton: {
+    alignItems: "center",
+    marginTop: 16,
+    paddingVertical: 12,
+  },
+  resendButtonDisabled: {
+    opacity: 0.5,
+  },
+  resendText: {
+    color: "#14A76C",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  resendTextDisabled: {
+    color: "#9CA3AF",
   },
 });
