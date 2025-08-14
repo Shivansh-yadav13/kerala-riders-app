@@ -7,37 +7,37 @@ export default function AuthLayout() {
       <Stack.Screen
         name="signup"
         options={{
-          title: "Kerala Riders",
+          headerShown: false,
         }}
       />
       <Stack.Screen
         name="user-info"
         options={{
-          title: "Kerala Riders",
+          headerShown: false,
         }}
       />
       <Stack.Screen
         name="email-verification"
         options={{
-          title: "Kerala Riders",
+          headerShown: false,
         }}
       />
       <Stack.Screen
         name="mobile-verification"
         options={{
-          title: "Kerala Riders",
+          headerShown: false,
         }}
       />
       <Stack.Screen
         name="consent"
         options={{
-          title: "Kerala Riders",
+          headerShown: false,
         }}
       />
       <Stack.Screen
         name="forgot-password"
         options={{
-          title: "Kerala Riders",
+          headerShown: false,
         }}
       />
     </Stack>

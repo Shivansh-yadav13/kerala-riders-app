@@ -1,7 +1,8 @@
 import { CustomSelect } from "@/components/CustomSelect";
 import { CustomTextInput } from "@/components/CustomTextInput";
 import { ThemedView } from "@/components/ThemedView";
-import { Link } from "expo-router";
+import { useAuth } from "@/hooks/useAuth";
+import { router } from "expo-router";
 import React, { useState } from "react";
 import {
   Alert,
@@ -55,6 +56,7 @@ export default function UserInfoScreen() {
   const [emirate, setEmirate] = useState("");
   const [city, setCity] = useState("");
   const [keralaDistrict, setKeralaDistrict] = useState("");
+  const { updateProfile, loading } = useAuth();
 
   const genderOptions = [
     { label: "Select gender", value: "" },
@@ -156,19 +158,28 @@ export default function UserInfoScreen() {
     setCity(""); // Reset city when emirate changes
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!whatsappNumber || !gender || !emirate || !city) {
       Alert.alert("Error", "Please fill in all required fields");
       return;
     }
-    // Handle continue logic
-    console.log("User info:", {
-      whatsappNumber,
+
+    const userInfoData = {
+      phone_number: `+971${whatsappNumber}`,
       gender,
-      emirate,
+      uae_emirate: emirate,
       city,
-      keralaDistrict,
-    });
+      kerala_district: keralaDistrict || null,
+    };
+
+    const { error } = await updateProfile(userInfoData);
+    
+    if (error) {
+      Alert.alert("Error", "Failed to save user information. Please try again.");
+      return;
+    }
+
+    router.push("/(auth)/email-verification");
   };
 
   return (
@@ -186,7 +197,7 @@ export default function UserInfoScreen() {
           <View style={styles.fieldContainer}>
             <Text style={styles.label}>WhatsApp Number</Text>
             <Text style={styles.helpText}>
-              Please enter a UAE number that's available on WhatsApp
+              Please enter a UAE number thats available on WhatsApp
             </Text>
             <CustomTextInput
               placeholder="50 123 4567"
@@ -249,10 +260,11 @@ export default function UserInfoScreen() {
         <TouchableOpacity
           style={styles.continueButton}
           onPress={handleContinue}
+          disabled={loading}
         >
-          <Link href="/(auth)/email-verification">
-            <Text style={styles.continueButtonText}>Continue</Text>
-          </Link>
+          <Text style={styles.continueButtonText}>
+            {loading ? "Saving..." : "Continue"}
+          </Text>
         </TouchableOpacity>
       </ThemedView>
     </ScrollView>

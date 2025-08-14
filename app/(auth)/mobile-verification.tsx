@@ -3,7 +3,6 @@ import { ThemedView } from "@/components/ThemedView";
 import { Link } from "expo-router";
 import React, { useState } from "react";
 import {
-  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,14 +13,14 @@ import {
 export default function MobileVerificationScreen() {
   const [verificationCode, setVerificationCode] = useState("");
 
-  const handleVerify = () => {
-    if (!verificationCode) {
-      Alert.alert("Error", "Please enter the verification code");
-      return;
-    }
-    // Handle verification logic
-    console.log("Verification code:", verificationCode);
-  };
+  // const handleVerify = () => {
+  //   if (!verificationCode) {
+  //     Alert.alert("Error", "Please enter the verification code");
+  //     return;
+  //   }
+  //   // Handle verification logic
+  //   console.log("Verification code:", verificationCode);
+  // };
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>

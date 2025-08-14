@@ -1,7 +1,8 @@
 import { CustomTextInput } from "@/components/CustomTextInput";
 import { ThemedView } from "@/components/ThemedView";
+import { useAuth } from "@/hooks/useAuth";
 import { Link } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   ScrollView,
@@ -13,6 +14,14 @@ import {
 
 export default function EmailVerificationScreen() {
   const [verificationCode, setVerificationCode] = useState("");
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (!user) return;
+    const isEmailVerified = user.user_metadata.is_email_verified;
+    if (!isEmailVerified) {
+    }
+  }, [user]);
 
   const handleVerify = () => {
     if (!verificationCode) {

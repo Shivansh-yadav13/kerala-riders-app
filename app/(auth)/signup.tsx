@@ -7,7 +7,9 @@ import {
   UserIcon,
 } from "@/components/Icons";
 import { ThemedView } from "@/components/ThemedView";
-import { Link } from "expo-router";
+import { useAuth } from "@/hooks/useAuth";
+import { authHelpers } from "@/lib/auth";
+import { Link, router } from "expo-router";
 import React, { useState } from "react";
 import {
   Alert,
@@ -25,6 +27,7 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const { signUp, loading, clearError } = useAuth();
 
   const getPasswordStrength = (password: string) => {
     if (password.length < 6)
@@ -36,17 +39,53 @@ export default function RegisterScreen() {
 
   const passwordStrength = getPasswordStrength(password);
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
+    clearError();
+    
     if (!fullName || !email || !password) {
       Alert.alert("Error", "Please fill in all fields");
       return;
     }
+    
+    if (!authHelpers.validateEmail(email)) {
+      Alert.alert("Error", "Please enter a valid email address");
+      return;
+    }
+    
+    const passwordValidation = authHelpers.validatePassword(password);
+    if (!passwordValidation.valid) {
+      Alert.alert("Error", passwordValidation.errors.join('\n'));
+      return;
+    }
+    
     if (!agreeToTerms) {
       Alert.alert("Error", "Please agree to the Terms & Conditions");
       return;
     }
-    // Handle signup logic here
-    console.log("Signup attempt:", { fullName, email, password });
+
+    const userData = {
+      full_name: fullName,
+      is_active: false,
+      is_data_consent: false,
+      is_email_verified: false,
+      is_mobile_verified: false,
+      phone_number: null,
+      gender: null,
+      uae_emirate: null,
+      city: null,
+      kerala_district: null,
+    };
+
+    const { user, error: signUpError } = await signUp(email, password, userData);
+    
+    if (signUpError) {
+      Alert.alert("Sign Up Error", authHelpers.formatAuthError(signUpError));
+      return;
+    }
+
+    if (user) {
+      router.push("/(auth)/user-info");
+    }
   };
 
   return (
@@ -125,10 +164,16 @@ export default function RegisterScreen() {
         </View>
 
         {/* Sign Up Button */}
-        <TouchableOpacity style={styles.signUpButton}>
-          <Link href="/(auth)/user-info" asChild>
-            <Text style={styles.signUpButtonText}>Sign Up</Text>
-          </Link>
+        <TouchableOpacity
+          style={styles.signUpButton}
+          disabled={loading}
+          onPress={handleSignUp}
+        >
+          {/* <Link href={"/(auth)/user-info"}> */}
+          <Text style={styles.signUpButtonText}>
+            {loading ? "Signing up..." : "Sign Ip"}
+          </Text>
+          {/* </Link> */}
         </TouchableOpacity>
 
         {/* Already have account */}

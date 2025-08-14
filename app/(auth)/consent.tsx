@@ -1,4 +1,6 @@
 import { ThemedView } from "@/components/ThemedView";
+import { useAuth } from "@/hooks/useAuth";
+import { router } from "expo-router";
 import React, { useState } from "react";
 import {
   Alert,
@@ -75,7 +77,11 @@ const SettingsIcon = ({ width = 16, height = 16 }) => (
 );
 
 // Toggle Switch Component
-const ToggleSwitch = ({ value, onValueChange, disabled = false }: {
+const ToggleSwitch = ({
+  value,
+  onValueChange,
+  disabled = false,
+}: {
   value: boolean;
   onValueChange: (value: boolean) => void;
   disabled?: boolean;
@@ -106,15 +112,31 @@ const ToggleSwitch = ({ value, onValueChange, disabled = false }: {
 export default function ConsentScreen() {
   const [marketingConsent, setMarketingConsent] = useState(false);
   const [stravaConsent, setStravaConsent] = useState(false);
+  const { updateProfile, user } = useAuth();
 
-  const handleContinue = () => {
-    // Handle consent submission
-    console.log("Consent data:", {
-      accountFunctionality: true, // Always true (required)
-      communityFeatures: true, // Always true (required)
-      marketingCommunications: marketingConsent,
-      stravaDataSharing: stravaConsent,
-    });
+  const handleContinue = async () => {
+    if (!user) {
+      Alert.alert("Error", "No user session found");
+      return;
+    }
+
+    const consentData = {
+      is_data_consent: true,
+      account_functionality: true,
+      community_features: true,
+      marketing_communications: marketingConsent,
+      strava_data_sharing: stravaConsent,
+      consent_date: new Date().toISOString(),
+    };
+
+    const { error } = await updateProfile(consentData);
+    
+    if (error) {
+      Alert.alert("Error", "Failed to save consent preferences");
+      return;
+    }
+
+    router.push("/(tabs)");
   };
 
   const handleCancel = () => {
@@ -144,7 +166,8 @@ export default function ConsentScreen() {
           <Text style={styles.title}>Kerala Riders</Text>
           <Text style={styles.subtitle}>Consent & Privacy</Text>
           <Text style={styles.description}>
-            Please review and select your preferences.{"\n"}Required items must be accepted to continue.
+            Please review and select your preferences.{"\n"}Required items must
+            be accepted to continue.
           </Text>
         </View>
 
@@ -166,7 +189,11 @@ export default function ConsentScreen() {
                 Essential for creating and managing your account.
               </Text>
             </View>
-            <ToggleSwitch value={true} onValueChange={() => {}} disabled={true} />
+            <ToggleSwitch
+              value={true}
+              onValueChange={() => {}}
+              disabled={true}
+            />
           </View>
 
           {/* Community Features */}
@@ -180,7 +207,11 @@ export default function ConsentScreen() {
                 Access to groups, leaderboards, and social interactions.
               </Text>
             </View>
-            <ToggleSwitch value={true} onValueChange={() => {}} disabled={true} />
+            <ToggleSwitch
+              value={true}
+              onValueChange={() => {}}
+              disabled={true}
+            />
           </View>
         </View>
 
@@ -228,13 +259,19 @@ export default function ConsentScreen() {
 
         {/* Bottom Links */}
         <View style={styles.bottomLinks}>
-          <TouchableOpacity style={styles.linkButton} onPress={handlePrivacyPolicy}>
+          <TouchableOpacity
+            style={styles.linkButton}
+            onPress={handlePrivacyPolicy}
+          >
             <View style={styles.linkContent}>
               <DocumentIcon width={16} height={16} />
               <Text style={styles.linkText}>Privacy Policy</Text>
             </View>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.linkButton} onPress={handleDataRights}>
+          <TouchableOpacity
+            style={styles.linkButton}
+            onPress={handleDataRights}
+          >
             <View style={styles.linkContent}>
               <SettingsIcon width={16} height={16} />
               <Text style={styles.linkText}>Manage My Data Rights</Text>
@@ -244,7 +281,10 @@ export default function ConsentScreen() {
 
         {/* Action Buttons */}
         <View style={styles.actionButtons}>
-          <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
+          <TouchableOpacity
+            style={styles.continueButton}
+            onPress={handleContinue}
+          >
             <Text style={styles.continueButtonText}>Accept & Continue</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
