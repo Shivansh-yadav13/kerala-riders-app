@@ -9,8 +9,10 @@ import {
 import { ThemedView } from "@/components/ThemedView";
 import { useAuth } from "@/hooks/useAuth";
 import { authHelpers } from "@/lib/auth";
+import { supabase } from "@/lib/supabase";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Link, router } from "expo-router";
+import * as ImagePicker from "expo-image-picker";
 import React, { useState } from "react";
 import {
   Alert,
@@ -28,6 +30,9 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [profileImageFile, setProfileImageFile] = useState<ImagePicker.ImagePickerAsset | null>(null);
+  const [imageUploading, setImageUploading] = useState(false);
   const { signUp, loading, clearError } = useAuth();
 
   const getPasswordStrength = (password: string) => {
@@ -39,6 +44,78 @@ export default function RegisterScreen() {
   };
 
   const passwordStrength = getPasswordStrength(password);
+
+  const pickImage = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    
+    if (permissionResult.granted === false) {
+      Alert.alert("Permission required", "Permission to access camera roll is required!");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      setProfileImage(result.assets[0].uri);
+      setProfileImageFile(result.assets[0]);
+    }
+  };
+
+  const uploadProfileImage = async (userId: string) => {
+    if (!profileImageFile) return null;
+
+    setImageUploading(true);
+    try {
+      const fileExt = profileImageFile.uri.split('.').pop()?.toLowerCase() ?? 'jpg';
+      const fileName = `profile.${fileExt}`;
+      
+      // Convert image URI to ArrayBuffer
+      const response = await fetch(profileImageFile.uri);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch image: ${response.status}`);
+      }
+      
+      const arrayBuffer = await response.arrayBuffer();
+      
+      // Determine contentType based on file extension
+      const getContentType = (ext: string) => {
+        switch (ext.toLowerCase()) {
+          case 'png': return 'image/png';
+          case 'jpg': case 'jpeg': return 'image/jpeg';
+          case 'gif': return 'image/gif';
+          case 'webp': return 'image/webp';
+          default: return 'image/jpeg';
+        }
+      };
+
+      const { data, error } = await supabase.storage
+        .from('avatars')
+        .upload(`${userId}/${fileName}`, arrayBuffer, {
+          contentType: getContentType(fileExt),
+          cacheControl: '3600',
+          upsert: true
+        });
+
+      if (error) {
+        console.error('Upload error:', error);
+        Alert.alert('Upload Error', 'Failed to upload profile image. Please try again.');
+        return null;
+      }
+
+      return data.path;
+    } catch (error) {
+      console.error('Upload error:', error);
+      Alert.alert('Upload Error', 'Failed to upload profile image. Please check your internet connection.');
+      return null;
+    } finally {
+      setImageUploading(false);
+    }
+  };
 
   const handleSignUp = async () => {
     clearError();
@@ -92,6 +169,10 @@ export default function RegisterScreen() {
     }
 
     if (user) {
+      if (profileImageFile) {
+        await uploadProfileImage(user.id);
+      }
+      
       await AsyncStorage.setItem("pending_verification_email", email);
       setTimeout(() => {
         router.push("/(auth)/email-verification");
@@ -102,16 +183,29 @@ export default function RegisterScreen() {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <ThemedView style={styles.content}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.title}>Kerala Riders</Text>
+          <Text style={styles.subtitle}>Create Your Account</Text>
+        </View>
+
         {/* Profile Picture Upload */}
         <View style={styles.profileSection}>
           <View style={styles.profileImageContainer}>
             <View style={styles.profileImage}>
-              <UserIcon width={32} height={32} color="#9CA3AF" />
+              {profileImage ? (
+                <Image source={{ uri: profileImage }} style={styles.profileImagePreview} />
+              ) : (
+                <UserIcon width={32} height={32} color="#9CA3AF" />
+              )}
             </View>
-            <TouchableOpacity style={styles.cameraButton}>
+            <TouchableOpacity style={styles.cameraButton} onPress={pickImage}>
               <CameraIcon width={16} height={16} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
+          {imageUploading && (
+            <Text style={styles.uploadingText}>Uploading image...</Text>
+          )}
         </View>
 
         {/* Form Fields */}
@@ -177,12 +271,12 @@ export default function RegisterScreen() {
         {/* Sign Up Button */}
         <TouchableOpacity
           style={styles.signUpButton}
-          disabled={loading}
+          disabled={loading || imageUploading}
           onPress={handleSignUp}
         >
           {/* <Link href={"/(auth)/user-info"}> */}
           <Text style={styles.signUpButtonText}>
-            {loading ? "Signing up..." : "Sign Ip"}
+            {loading ? "Signing up..." : imageUploading ? "Uploading..." : "Sign Up"}
           </Text>
           {/* </Link> */}
         </TouchableOpacity>
@@ -247,7 +341,18 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: "center",
-    paddingVertical: 32,
+    paddingVertical: 28,
+    paddingHorizontal: 24,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#252525",
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: "#6B7280",
   },
   titleContainer: {
     flexDirection: "row",
@@ -285,6 +390,11 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 4,
   },
+  profileImagePreview: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 44,
+  },
   cameraButton: {
     position: "absolute",
     bottom: 0,
@@ -297,6 +407,12 @@ const styles = StyleSheet.create({
     borderColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
+  },
+  uploadingText: {
+    fontSize: 12,
+    color: "#6B7280",
+    textAlign: "center",
+    marginTop: 8,
   },
   formSection: {
     gap: 16,
