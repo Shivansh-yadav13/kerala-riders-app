@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function MobileVerificationScreen() {
   const [verificationCode, setVerificationCode] = useState("");
@@ -23,47 +24,54 @@ export default function MobileVerificationScreen() {
   // };
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <ThemedView style={styles.content}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>Kerala Riders</Text>
-          <Text style={styles.subtitle}>Verify Your Mobile</Text>
-        </View>
-
-        {/* Main Content */}
-        <View style={styles.mainContent}>
-          {/* Mobile Verification Section */}
-          <View style={styles.verificationSection}>
-            <Text style={styles.sectionTitle}>Mobile Verification</Text>
-            <Text style={styles.description}>
-              We have sent you an OTP on your provided phone number, please
-              enter the code to continue.
-            </Text>
-
-            {/* Verification Code Input */}
-            <CustomTextInput
-              placeholder="550 123 4567"
-              value={verificationCode}
-              onChangeText={setVerificationCode}
-              keyboardType="numeric"
-              maxLength={6}
-              containerStyle={styles.inputContainer}
-            />
+    <SafeAreaView
+      style={styles.container}
+      edges={["top", "left", "right", "bottom"]}
+    >
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+      >
+        <ThemedView style={styles.content}>
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={styles.title}>Kerala Riders</Text>
+            <Text style={styles.subtitle}>Verify Your Mobile</Text>
           </View>
 
-          {/* Verify Button */}
-          <TouchableOpacity
-            style={styles.verifyButton}
-            // onPress={handleVerify}
-          >
-            <Link href={"/(auth)/consent"}>
-              <Text style={styles.verifyButtonText}>Verify</Text>
-            </Link>
-          </TouchableOpacity>
-        </View>
-      </ThemedView>
-    </ScrollView>
+          {/* Main Content */}
+          <View style={styles.mainContent}>
+            {/* Mobile Verification Section */}
+            <View style={styles.verificationSection}>
+              <Text style={styles.sectionTitle}>Mobile Verification</Text>
+              <Text style={styles.description}>
+                We have sent you an OTP on your provided phone number, please
+                enter the code to continue.
+              </Text>
+
+              {/* Verification Code Input */}
+              <CustomTextInput
+                placeholder="550 123 4567"
+                value={verificationCode}
+                onChangeText={setVerificationCode}
+                keyboardType="numeric"
+                maxLength={6}
+                containerStyle={styles.inputContainer}
+              />
+            </View>
+            {/* Verify Button */}
+            <TouchableOpacity
+              style={styles.verifyButton}
+              // onPress={handleVerify}
+            >
+              <Link href={"/(auth)/consent"}>
+                <Text style={styles.verifyButtonText}>Verify</Text>
+              </Link>
+            </TouchableOpacity>
+          </View>
+        </ThemedView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -72,9 +80,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F7F7F7",
   },
+  scrollView: {
+    flex: 1,
+  },
   content: {
     flex: 1,
-    marginTop: 40,
     paddingHorizontal: 24,
     paddingBottom: 40,
   },

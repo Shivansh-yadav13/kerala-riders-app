@@ -23,6 +23,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function RegisterScreen() {
   const [fullName, setFullName] = useState("");
@@ -181,8 +182,9 @@ export default function RegisterScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <ThemedView style={styles.content}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <ThemedView style={styles.content}>
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>Kerala Riders</Text>
@@ -323,8 +325,9 @@ export default function RegisterScreen() {
             <Text style={styles.termsLink}>Privacy Policy</Text>
           </Text>
         </TouchableOpacity>
-      </ThemedView>
-    </ScrollView>
+        </ThemedView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -333,9 +336,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F7F7F7",
   },
+  scrollView: {
+    flex: 1,
+  },
   content: {
     flex: 1,
-    marginTop: 40,
     paddingHorizontal: 24,
     paddingBottom: 40,
   },

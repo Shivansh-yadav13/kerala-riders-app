@@ -13,6 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 // Icon Components using high-resolution PNG images
 const WhatsAppIcon = ({ width = 20, height = 20 }) => (
@@ -50,9 +51,25 @@ const MountainIcon = ({ width = 20, height = 20 }) => (
   />
 );
 
+const ActivityIcon = ({ width = 20, height = 20 }) => (
+  <Image
+    source={require("@/assets/images/icons/dumbbell.png")}
+    style={{ width, height, tintColor: "#9CA3AF", resizeMode: "contain" }}
+  />
+);
+
+const CountryIcon = ({ width = 20, height = 20 }) => (
+  <Image
+    source={require("@/assets/images/icons/globe.png")}
+    style={{ width, height, tintColor: "#9CA3AF", resizeMode: "contain" }}
+  />
+);
+
 export default function UserInfoScreen() {
   const [whatsappNumber, setWhatsappNumber] = useState("");
   const [gender, setGender] = useState("");
+  const [activityCategory, setActivityCategory] = useState("");
+  const [country, setCountry] = useState("");
   const [emirate, setEmirate] = useState("");
   const [city, setCity] = useState("");
   const [keralaDistrict, setKeralaDistrict] = useState("");
@@ -64,6 +81,28 @@ export default function UserInfoScreen() {
     { label: "Female", value: "female" },
     { label: "Other", value: "other" },
     { label: "Prefer not to say", value: "prefer-not-to-say" },
+  ];
+
+  const activityCategoryOptions = [
+    { label: "Select your activity", value: "" },
+    { label: "Runner", value: "runner" },
+    { label: "Swimmer", value: "swimmer" },
+    { label: "Rider", value: "rider" },
+    { label: "Run and Ride", value: "run-and-ride" },
+    { label: "Run and Swim", value: "run-and-swim" },
+    { label: "Ride and Swim", value: "ride-and-swim" },
+    { label: "Triathlete (Run, Ride, and Swim)", value: "triathlete" },
+  ];
+
+  const countryOptions = [
+    { label: "Select country", value: "" },
+    { label: "United Arab Emirates", value: "uae" },
+    { label: "India", value: "india" },
+    { label: "United States", value: "usa" },
+    { label: "United Kingdom", value: "uk" },
+    { label: "Canada", value: "canada" },
+    { label: "Australia", value: "australia" },
+    { label: "Other", value: "other" },
   ];
 
   const emirateOptions = [
@@ -135,6 +174,8 @@ export default function UserInfoScreen() {
       ? [{ label: "Select city", value: "" }, ...cityData[emirate]]
       : [{ label: "Select city", value: "" }];
 
+  const isUAE = country === "uae";
+
   const keralaDistrictOptions = [
     { label: "Select Kerala district", value: "" },
     { label: "Thiruvananthapuram", value: "thiruvananthapuram" },
@@ -153,23 +194,64 @@ export default function UserInfoScreen() {
     { label: "Kasaragod", value: "kasaragod" },
   ];
 
+  const handleCountryChange = (value: string) => {
+    setCountry(value);
+    if (value !== "uae") {
+      setEmirate("");
+      setCity("");
+    }
+  };
+
   const handleEmirateChange = (value: string) => {
     setEmirate(value);
     setCity(""); // Reset city when emirate changes
   };
 
+  const generateKRID = async (activityCategory: string): Promise<string> => {
+    const activityCodes: { [key: string]: string } = {
+      "runner": "01",
+      "swimmer": "02",
+      "rider": "03",
+      "run-and-ride": "04",
+      "run-and-swim": "05",
+      "ride-and-swim": "06",
+      "triathlete": "07",
+    };
+
+    const currentYear = new Date().getFullYear().toString().slice(-2);
+    const activityCode = activityCodes[activityCategory] || "00";
+    
+    // Get next member number (this would typically come from a database)
+    // For now, we'll use a random number between 1-999
+    const memberNumber = Math.floor(Math.random() * 999) + 1;
+    const paddedMemberNumber = memberNumber.toString().padStart(3, "0");
+    
+    return `kr/${activityCode}/${currentYear}/${paddedMemberNumber}`;
+  };
+
   const handleContinue = async () => {
-    if (!whatsappNumber || !gender || !emirate || !city) {
+    if (!whatsappNumber || !gender || !activityCategory || !country) {
       Alert.alert("Error", "Please fill in all required fields");
       return;
     }
 
+    if (isUAE && (!emirate || !city)) {
+      Alert.alert("Error", "Please select UAE Emirate and City");
+      return;
+    }
+
+    // Generate KRID
+    const krid = await generateKRID(activityCategory);
+
     const userInfoData = {
       phone_number: `+971${whatsappNumber}`,
       gender,
-      uae_emirate: emirate,
-      city,
+      activity_category: activityCategory,
+      country,
+      uae_emirate: isUAE ? emirate : null,
+      city: isUAE ? city : null,
       kerala_district: keralaDistrict || null,
+      krid,
     };
 
     const { error } = await updateProfile(userInfoData);
@@ -183,8 +265,9 @@ export default function UserInfoScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <ThemedView style={styles.content}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <ThemedView style={styles.content}>
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>Kerala Riders</Text>
@@ -223,26 +306,50 @@ export default function UserInfoScreen() {
             leftIcon={<GenderIcon width={20} height={20} />}
           />
 
-          {/* UAE Emirate */}
+          {/* Activity Category */}
           <CustomSelect
-            label="UAE Emirate"
-            placeholder="Select emirate"
-            value={emirate}
-            options={emirateOptions}
-            onValueChange={handleEmirateChange}
-            leftIcon={<LocationIcon width={20} height={20} />}
+            label="Activity Category"
+            placeholder="Select your activity"
+            value={activityCategory}
+            options={activityCategoryOptions}
+            onValueChange={setActivityCategory}
+            leftIcon={<ActivityIcon width={20} height={20} />}
           />
 
-          {/* City */}
+          {/* Country */}
           <CustomSelect
-            label="City"
-            placeholder="Select city"
-            value={city}
-            options={cityOptions}
-            onValueChange={setCity}
-            leftIcon={<BuildingIcon width={20} height={20} />}
-            disabled={!emirate}
+            label="Country"
+            placeholder="Select country"
+            value={country}
+            options={countryOptions}
+            onValueChange={handleCountryChange}
+            leftIcon={<CountryIcon width={20} height={20} />}
           />
+
+          {/* UAE Emirate - Only show if UAE is selected */}
+          {isUAE && (
+            <CustomSelect
+              label="UAE Emirate"
+              placeholder="Select emirate"
+              value={emirate}
+              options={emirateOptions}
+              onValueChange={handleEmirateChange}
+              leftIcon={<LocationIcon width={20} height={20} />}
+            />
+          )}
+
+          {/* City - Only show if UAE is selected */}
+          {isUAE && (
+            <CustomSelect
+              label="City"
+              placeholder="Select city"
+              value={city}
+              options={cityOptions}
+              onValueChange={setCity}
+              leftIcon={<BuildingIcon width={20} height={20} />}
+              disabled={!emirate}
+            />
+          )}
 
           {/* Kerala District */}
           <CustomSelect
@@ -266,8 +373,9 @@ export default function UserInfoScreen() {
             {loading ? "Saving..." : "Continue"}
           </Text>
         </TouchableOpacity>
-      </ThemedView>
-    </ScrollView>
+        </ThemedView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -276,9 +384,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F7F7F7",
   },
+  scrollView: {
+    flex: 1,
+  },
   content: {
     flex: 1,
-    marginTop: 40,
     paddingHorizontal: 24,
     paddingBottom: 40,
   },

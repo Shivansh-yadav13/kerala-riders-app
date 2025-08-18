@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function EmailVerificationScreen() {
   const [verificationCode, setVerificationCode] = useState("");
@@ -100,8 +101,9 @@ export default function EmailVerificationScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <ThemedView style={styles.content}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <ThemedView style={styles.content}>
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>Kerala Riders</Text>
@@ -165,8 +167,9 @@ export default function EmailVerificationScreen() {
             </Text>
           </TouchableOpacity>
         </View>
-      </ThemedView>
-    </ScrollView>
+        </ThemedView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -175,9 +178,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F7F7F7",
   },
+  scrollView: {
+    flex: 1,
+  },
   content: {
     flex: 1,
-    marginTop: 40,
     paddingHorizontal: 24,
     paddingBottom: 40,
   },
