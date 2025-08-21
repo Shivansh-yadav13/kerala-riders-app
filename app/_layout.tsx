@@ -8,12 +8,12 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
 
+import { AuthProvider } from "@/contexts/AuthProvider";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import { AuthProvider } from "@/components/AuthProvider";
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  
+
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
@@ -28,10 +28,12 @@ export default function RootLayout() {
       <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
         <Stack
           screenOptions={{
-            contentStyle: { backgroundColor: '#F7F7F7' },
-          }}>
+            contentStyle: { backgroundColor: "#F7F7F7" },
+          }}
+        >
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="(app)" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" />
         </Stack>
         <StatusBar style="auto" />

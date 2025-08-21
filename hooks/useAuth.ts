@@ -19,6 +19,7 @@ export const useAuth = () => {
     isAuthenticated: !!store.user && !!store.session,
     signUp: store.signUp,
     signIn: store.signIn,
+    signInWithGoogle: store.signInWithGoogle,
     signInOTPVerification: store.signInOTPVerification,
     resendOTP: store.resendOTP,
     signOut: store.signOut,

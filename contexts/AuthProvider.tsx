@@ -45,13 +45,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         router.replace("/(auth)/user-info");
       } else if (!user_metadata.is_email_verified) {
         router.replace("/(auth)/email-verification");
-      } else if (!user_metadata.is_mobile_verified) {
-        router.replace("/(auth)/mobile-verification");
+        // } else if (!user_metadata.is_mobile_verified) {
+        //   router.replace("/(auth)/mobile-verification");
       } else if (!user_metadata.is_data_consent) {
         router.replace("/(auth)/consent");
       } else {
         // User has completed all onboarding steps
-        router.replace("/(tabs)");
+        router.replace("/(app)/user-profile");
       }
     } else if (!auth.isAuthenticated && auth.initialized) {
       // User is not authenticated, redirect to signup

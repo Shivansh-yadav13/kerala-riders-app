@@ -131,13 +131,13 @@ export default function ConsentScreen() {
     };
 
     const { error } = await updateProfile(consentData);
-    
+
     if (error) {
       Alert.alert("Error", "Failed to save consent preferences");
       return;
     }
 
-    router.push("/(tabs)");
+    router.push("/(app)/user-profile");
   };
 
   const handleCancel = () => {
@@ -160,139 +160,155 @@ export default function ConsentScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+    <SafeAreaView
+      style={styles.container}
+      edges={["top", "left", "right", "bottom"]}
+    >
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+      >
         <ThemedView style={styles.content}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>Kerala Riders</Text>
-          <Text style={styles.subtitle}>Consent & Privacy</Text>
-          <Text style={styles.description}>
-            Please review and select your preferences.{"\n"}Required items must
-            be accepted to continue.
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={styles.title}>Kerala Riders</Text>
+            <Text style={styles.subtitle}>Consent & Privacy</Text>
+            <Text style={styles.description}>
+              Please review and select your preferences.{"\n"}Required items
+              must be accepted to continue.
+            </Text>
+          </View>
+
+          {/* Required Section */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <ShieldIcon width={16} height={16} />
+              <Text style={styles.sectionTitle}>
+                Required (Mandatory for Service Use)
+              </Text>
+            </View>
+
+            {/* Account Functionality */}
+            <View style={[styles.consentItem, styles.requiredItem]}>
+              <View style={styles.itemContent}>
+                <View style={styles.itemHeader}>
+                  <UserIcon width={16} height={16} />
+                  <Text style={styles.itemTitle}>Account Functionality</Text>
+                </View>
+                <Text style={styles.itemDescription}>
+                  Essential for creating and managing your account.
+                </Text>
+              </View>
+              <ToggleSwitch
+                value={true}
+                onValueChange={() => {}}
+                disabled={true}
+              />
+            </View>
+
+            {/* Community Features */}
+            <View style={[styles.consentItem, styles.requiredItem]}>
+              <View style={styles.itemContent}>
+                <View style={styles.itemHeader}>
+                  <UsersIcon width={16} height={16} />
+                  <Text style={styles.itemTitle}>Community Features</Text>
+                </View>
+                <Text style={styles.itemDescription}>
+                  Access to groups, leaderboards, and social interactions.
+                </Text>
+              </View>
+              <ToggleSwitch
+                value={true}
+                onValueChange={() => {}}
+                disabled={true}
+              />
+            </View>
+          </View>
+
+          {/* Optional Section */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <ToggleIcon width={16} height={16} />
+              <Text style={styles.sectionTitle}>Optional</Text>
+            </View>
+
+            {/* Marketing Communications */}
+            <View style={[styles.consentItem, styles.optionalItem]}>
+              <View style={styles.itemContent}>
+                <View style={styles.itemHeader}>
+                  <EnvelopeIcon width={16} height={16} />
+                  <Text style={styles.itemTitle}>Marketing Communications</Text>
+                </View>
+                <Text style={styles.itemDescription}>
+                  Receive updates, newsletters, and promotional offers.
+                </Text>
+              </View>
+              <ToggleSwitch
+                value={marketingConsent}
+                onValueChange={setMarketingConsent}
+              />
+            </View>
+
+            {/* Strava Data Sharing */}
+            <View style={[styles.consentItem, styles.optionalItem]}>
+              <View style={styles.itemContent}>
+                <View style={styles.itemHeader}>
+                  <ActivityIcon width={16} height={16} />
+                  <Text style={styles.itemTitle}>Strava Data Sharing</Text>
+                </View>
+                <Text style={styles.itemDescription}>
+                  Connect with Strava to sync your runs and workouts.
+                </Text>
+              </View>
+              <ToggleSwitch
+                value={stravaConsent}
+                onValueChange={setStravaConsent}
+              />
+            </View>
+          </View>
+
+          {/* Bottom Links */}
+          <View style={styles.bottomLinks}>
+            <TouchableOpacity
+              style={styles.linkButton}
+              onPress={handlePrivacyPolicy}
+            >
+              <View style={styles.linkContent}>
+                <DocumentIcon width={16} height={16} />
+                <Text style={styles.linkText}>Privacy Policy</Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.linkButton}
+              onPress={handleDataRights}
+            >
+              <View style={styles.linkContent}>
+                <SettingsIcon width={16} height={16} />
+                <Text style={styles.linkText}>Manage My Data Rights</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+
+          {/* Note */}
+          <Text style={styles.noteText}>
+            Mandatory features are required to provide core services. You may change or withdraw consent for optional features anytime.
           </Text>
-        </View>
 
-        {/* Required Section */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <ShieldIcon width={16} height={16} />
-            <Text style={styles.sectionTitle}>Required (Cannot Uncheck)</Text>
+          {/* Action Buttons */}
+          <View style={styles.actionButtons}>
+            <TouchableOpacity
+              style={styles.continueButton}
+              onPress={handleContinue}
+            >
+              <Text style={styles.continueButtonText}>Accept & Continue</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={handleCancel}
+            >
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
           </View>
-
-          {/* Account Functionality */}
-          <View style={[styles.consentItem, styles.requiredItem]}>
-            <View style={styles.itemContent}>
-              <View style={styles.itemHeader}>
-                <UserIcon width={16} height={16} />
-                <Text style={styles.itemTitle}>Account Functionality</Text>
-              </View>
-              <Text style={styles.itemDescription}>
-                Essential for creating and managing your account.
-              </Text>
-            </View>
-            <ToggleSwitch
-              value={true}
-              onValueChange={() => {}}
-              disabled={true}
-            />
-          </View>
-
-          {/* Community Features */}
-          <View style={[styles.consentItem, styles.requiredItem]}>
-            <View style={styles.itemContent}>
-              <View style={styles.itemHeader}>
-                <UsersIcon width={16} height={16} />
-                <Text style={styles.itemTitle}>Community Features</Text>
-              </View>
-              <Text style={styles.itemDescription}>
-                Access to groups, leaderboards, and social interactions.
-              </Text>
-            </View>
-            <ToggleSwitch
-              value={true}
-              onValueChange={() => {}}
-              disabled={true}
-            />
-          </View>
-        </View>
-
-        {/* Optional Section */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <ToggleIcon width={16} height={16} />
-            <Text style={styles.sectionTitle}>Optional</Text>
-          </View>
-
-          {/* Marketing Communications */}
-          <View style={[styles.consentItem, styles.optionalItem]}>
-            <View style={styles.itemContent}>
-              <View style={styles.itemHeader}>
-                <EnvelopeIcon width={16} height={16} />
-                <Text style={styles.itemTitle}>Marketing Communications</Text>
-              </View>
-              <Text style={styles.itemDescription}>
-                Receive updates, newsletters, and promotional offers.
-              </Text>
-            </View>
-            <ToggleSwitch
-              value={marketingConsent}
-              onValueChange={setMarketingConsent}
-            />
-          </View>
-
-          {/* Strava Data Sharing */}
-          <View style={[styles.consentItem, styles.optionalItem]}>
-            <View style={styles.itemContent}>
-              <View style={styles.itemHeader}>
-                <ActivityIcon width={16} height={16} />
-                <Text style={styles.itemTitle}>Strava Data Sharing</Text>
-              </View>
-              <Text style={styles.itemDescription}>
-                Connect with Strava to sync your runs and workouts.
-              </Text>
-            </View>
-            <ToggleSwitch
-              value={stravaConsent}
-              onValueChange={setStravaConsent}
-            />
-          </View>
-        </View>
-
-        {/* Bottom Links */}
-        <View style={styles.bottomLinks}>
-          <TouchableOpacity
-            style={styles.linkButton}
-            onPress={handlePrivacyPolicy}
-          >
-            <View style={styles.linkContent}>
-              <DocumentIcon width={16} height={16} />
-              <Text style={styles.linkText}>Privacy Policy</Text>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.linkButton}
-            onPress={handleDataRights}
-          >
-            <View style={styles.linkContent}>
-              <SettingsIcon width={16} height={16} />
-              <Text style={styles.linkText}>Manage My Data Rights</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
-
-        {/* Action Buttons */}
-        <View style={styles.actionButtons}>
-          <TouchableOpacity
-            style={styles.continueButton}
-            onPress={handleContinue}
-          >
-            <Text style={styles.continueButtonText}>Accept & Continue</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
-            <Text style={styles.cancelButtonText}>Cancel</Text>
-          </TouchableOpacity>
-        </View>
         </ThemedView>
       </ScrollView>
     </SafeAreaView>
@@ -457,6 +473,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#14A76C",
     fontWeight: "500",
+  },
+  noteText: {
+    fontSize: 12,
+    color: "#6B7280",
+    textAlign: "center",
+    marginBottom: 20,
+    lineHeight: 16,
   },
   actionButtons: {
     gap: 12,

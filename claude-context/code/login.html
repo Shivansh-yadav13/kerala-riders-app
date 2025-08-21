@@ -1,0 +1,155 @@
+<html><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = {
+"theme": {
+  "extend": {
+    "colors": {
+      "primary": "#252525",
+      "secondary": "#F7F7F7",
+      "accent": "#14A76C",
+      "orange": "#F7931E"
+    },
+    "fontFamily": {
+      "sans": [
+        "Inter",
+        "sans-serif"
+      ]
+    }
+  }
+}
+};</script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  
+  <style>::-webkit-scrollbar { display: none;}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&amp;display=swap"><style>
+    body {
+      font-family: 'Inter', sans-serif !important;
+    }
+    
+    /* Preserve Font Awesome icons */
+    .fa, .fas, .far, .fal, .fab {
+      font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands" !important;
+    }
+  </style><style>
+.highlighted-section {
+  outline: 2px solid #3F20FB;
+  background-color: rgba(63, 32, 251, 0.1);
+}
+
+.edit-button {
+  position: absolute;
+  z-index: 1000;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+html, body {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+</style></head>
+<body class="bg-gray-50 font-sans">
+
+<!-- Header Section -->
+<header id="header" class="bg-white px-6 py-8 text-center">
+  <div class="flex items-center justify-center mb-2">
+      <i class="fa-solid fa-bicycle text-accent text-2xl mr-2"></i>
+      <h1 class="text-2xl font-bold text-primary">Kerala Riders</h1>
+  </div>
+  <p class="text-sm text-gray-500">Wellness App</p>
+</header>
+
+<!-- Main Content -->
+<main id="main-content" class="px-6 pb-20">
+
+  <!-- Title Section -->
+  <section id="title-section" class="mb-8">
+      <h1 class="text-2xl font-bold text-primary mb-2">Welcome Back</h1>
+      <p class="text-gray-500">Log in to continue</p>
+  </section>
+
+  <!-- Login Fields -->
+  <section id="login-fields" class="space-y-4 mb-6">
+      <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+          <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <i class="fa-solid fa-envelope text-gray-400"></i>
+              </div>
+              <input type="email" placeholder="Enter your email" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent">
+          </div>
+      </div>
+      
+      <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+          <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <i class="fa-solid fa-lock text-gray-400"></i>
+              </div>
+              <input type="password" id="password" placeholder="Enter your password" class="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent">
+              <button type="button" onclick="togglePassword()" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                  <i class="fa-solid fa-eye text-gray-400" id="eyeIcon"></i>
+              </button>
+          </div>
+      </div>
+  </section>
+
+  <!-- Primary Login Button -->
+  <section id="primary-button" class="mb-6">
+      <button class="w-full bg-accent text-white py-3 rounded-lg font-semibold text-lg hover:bg-green-700 transition-colors">
+          Login
+      </button>
+  </section>
+
+  <!-- OR Divider -->
+  <section id="divider" class="mb-6">
+      <div class="flex items-center">
+          <div class="flex-1 border-t border-gray-300"></div>
+          <span class="px-3 text-sm text-gray-500 bg-gray-50">or</span>
+          <div class="flex-1 border-t border-gray-300"></div>
+      </div>
+  </section>
+
+  <!-- Strava OAuth Button -->
+  <section id="oauth-section" class="mb-8">
+      <button class="w-full bg-orange text-white py-3 rounded-lg font-semibold text-lg hover:bg-orange-600 transition-colors flex items-center justify-center space-x-2">
+          <i class="fa-brands fa-strava text-xl"></i>
+          <span>Continue with Strava</span>
+      </button>
+  </section>
+
+  <!-- Footer Links -->
+  <section id="footer-links" class="flex justify-between items-center">
+      <button class="text-accent font-medium cursor-pointer text-sm">
+          Forgot password?
+      </button>
+      <button class="text-accent font-medium cursor-pointer text-sm">
+          Sign up
+      </button>
+  </section>
+
+</main>
+
+<script>
+function togglePassword() {
+  const passwordInput = document.getElementById('password');
+  const eyeIcon = document.getElementById('eyeIcon');
+  
+  if (passwordInput.type === 'password') {
+      passwordInput.type = 'text';
+      eyeIcon.classList.remove('fa-eye');
+      eyeIcon.classList.add('fa-eye-slash');
+  } else {
+      passwordInput.type = 'password';
+      eyeIcon.classList.remove('fa-eye-slash');
+      eyeIcon.classList.add('fa-eye');
+  }
+}
+</script>
+
+
+</body></html>

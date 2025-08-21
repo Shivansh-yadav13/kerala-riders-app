@@ -1,0 +1,296 @@
+<html><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script> window.FontAwesomeConfig = { autoReplaceSvg: 'nest'};</script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  
+  <script>tailwind.config = {
+"theme": {
+  "extend": {
+    "colors": {
+      "sea-green": "#14A76C",
+      "bright-orange": "#F7931E",
+      "dark-gray": "#252525",
+      "light-gray": "#F7F7F7"
+    },
+    "fontFamily": {
+      "inter": [
+        "Inter",
+        "sans-serif"
+      ],
+      "sans": [
+        "Inter",
+        "sans-serif"
+      ]
+    }
+  }
+}
+};</script>
+  <style>::-webkit-scrollbar { display: none;}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&amp;display=swap"><style>
+    body {
+      font-family: 'Inter', sans-serif !important;
+    }
+    
+    /* Preserve Font Awesome icons */
+    .fa, .fas, .far, .fal, .fab {
+      font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands" !important;
+    }
+  </style><style>
+.highlighted-section {
+  outline: 2px solid #3F20FB;
+  background-color: rgba(63, 32, 251, 0.1);
+}
+
+.edit-button {
+  position: absolute;
+  z-index: 1000;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+html, body {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+</style></head>
+<body class="bg-light-gray min-h-screen font-sans">
+
+  <!-- Header Section -->
+  <header id="header" class="bg-white p-4 shadow-sm">
+      <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center space-x-4">
+              <div class="relative">
+                  <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg" alt="Profile" class="w-16 h-16 rounded-full object-cover border-2 border-sea-green">
+                  <div class="absolute -bottom-1 -right-1 bg-sea-green rounded-full p-1.5">
+                      <i class="fa-solid fa-camera text-white text-xs"></i>
+                  </div>
+              </div>
+              <div>
+                  <h1 class="text-xl font-bold text-dark-gray">Priya Nair</h1>
+                  <p class="text-sm text-gray-500">@priya_rides</p>
+                  <div class="flex items-center mt-1">
+                      <i class="fa-solid fa-building text-bright-orange text-xs mr-1"></i>
+                      <span class="text-xs text-gray-600">Corporate Wellness</span>
+                  </div>
+              </div>
+          </div>
+          <button class="bg-sea-green text-white px-4 py-2 rounded-lg text-sm font-medium">
+              Edit Profile
+          </button>
+      </div>
+      
+      <!-- Profile Completion -->
+      <div class="mb-2">
+          <div class="flex justify-between items-center mb-1">
+              <span class="text-xs text-gray-600">Profile Completion</span>
+              <span class="text-xs text-sea-green font-medium">85%</span>
+          </div>
+          <div class="w-full bg-gray-200 rounded-full h-2">
+              <div class="bg-sea-green h-2 rounded-full" style="width: 85%"></div>
+          </div>
+      </div>
+  </header>
+
+  <!-- Quick Stats Section -->
+  <section id="quick-stats" class="p-4">
+      <h2 class="text-lg font-semibold text-dark-gray mb-3">Quick Stats</h2>
+      <div class="grid grid-cols-2 gap-3">
+          <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+              <div class="flex items-center justify-between mb-2">
+                  <i class="fa-solid fa-running text-sea-green text-xl"></i>
+                  <span class="text-xs bg-bright-orange/10 text-bright-orange px-2 py-1 rounded-full">+12</span>
+              </div>
+              <p class="text-2xl font-bold text-dark-gray">156</p>
+              <p class="text-xs text-gray-500">Total Activities</p>
+          </div>
+          
+          <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+              <div class="flex items-center justify-between mb-2">
+                  <i class="fa-solid fa-route text-bright-orange text-xl"></i>
+                  <span class="text-xs text-gray-500">km</span>
+              </div>
+              <p class="text-2xl font-bold text-dark-gray">2,847</p>
+              <p class="text-xs text-gray-500">Distance Covered</p>
+          </div>
+          
+          <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+              <div class="flex items-center justify-between mb-2">
+                  <i class="fa-solid fa-trophy text-sea-green text-xl"></i>
+                  <span class="text-xs bg-sea-green/10 text-sea-green px-2 py-1 rounded-full">Active</span>
+              </div>
+              <p class="text-2xl font-bold text-dark-gray">8</p>
+              <p class="text-xs text-gray-500">Challenges Joined</p>
+          </div>
+          
+          <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+              <div class="flex items-center justify-between mb-2">
+                  <i class="fa-solid fa-calendar-check text-bright-orange text-xl"></i>
+                  <span class="text-xs text-gray-500">Upcoming</span>
+              </div>
+              <p class="text-2xl font-bold text-dark-gray">3</p>
+              <p class="text-xs text-gray-500">Events Joined</p>
+          </div>
+      </div>
+  </section>
+
+  <!-- Recent Activity Feed -->
+  <section id="recent-activities" class="p-4">
+      <div class="flex justify-between items-center mb-3">
+          <h2 class="text-lg font-semibold text-dark-gray">Recent Activities</h2>
+          <button class="text-sea-green text-sm font-medium">View All</button>
+      </div>
+      <div class="space-y-3">
+          <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+              <div class="flex items-center justify-between mb-2">
+                  <div class="flex items-center space-x-3">
+                      <div class="bg-sea-green/10 p-2 rounded-lg">
+                          <i class="fa-solid fa-bicycle text-sea-green"></i>
+                      </div>
+                      <div>
+                          <p class="font-medium text-dark-gray">Morning Ride</p>
+                          <p class="text-xs text-gray-500">Today • 7:30 AM</p>
+                      </div>
+                  </div>
+                  <div class="text-right">
+                      <p class="font-semibold text-dark-gray">15.2 km</p>
+                      <p class="text-xs text-gray-500">45 min</p>
+                  </div>
+              </div>
+          </div>
+          
+          <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+              <div class="flex items-center justify-between mb-2">
+                  <div class="flex items-center space-x-3">
+                      <div class="bg-bright-orange/10 p-2 rounded-lg">
+                          <i class="fa-solid fa-running text-bright-orange"></i>
+                      </div>
+                      <div>
+                          <p class="font-medium text-dark-gray">Evening Run</p>
+                          <p class="text-xs text-gray-500">Yesterday • 6:15 PM</p>
+                      </div>
+                  </div>
+                  <div class="text-right">
+                      <p class="font-semibold text-dark-gray">5.8 km</p>
+                      <p class="text-xs text-gray-500">28 min</p>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </section>
+
+  <!-- Challenges & Events -->
+  <section id="challenges-events" class="p-4">
+      <h2 class="text-lg font-semibold text-dark-gray mb-3">Active Challenges</h2>
+      <div class="overflow-x-auto">
+          <div class="flex space-x-3 pb-2">
+              <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 min-w-[280px]">
+                  <div class="flex items-center justify-between mb-3">
+                      <h3 class="font-semibold text-dark-gray">100km February</h3>
+                      <span class="text-xs bg-sea-green text-white px-2 py-1 rounded-full">Active</span>
+                  </div>
+                  <div class="mb-3">
+                      <div class="flex justify-between text-sm mb-1">
+                          <span class="text-gray-600">Progress</span>
+                          <span class="font-medium text-dark-gray">67/100 km</span>
+                      </div>
+                      <div class="w-full bg-gray-200 rounded-full h-2">
+                          <div class="bg-sea-green h-2 rounded-full" style="width: 67%"></div>
+                      </div>
+                  </div>
+                  <p class="text-xs text-gray-500">15 days remaining</p>
+              </div>
+              
+              <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 min-w-[280px]">
+                  <div class="flex items-center justify-between mb-3">
+                      <h3 class="font-semibold text-dark-gray">Step Challenge</h3>
+                      <span class="text-xs bg-bright-orange text-white px-2 py-1 rounded-full">Pending</span>
+                  </div>
+                  <div class="mb-3">
+                      <div class="flex justify-between text-sm mb-1">
+                          <span class="text-gray-600">Progress</span>
+                          <span class="font-medium text-dark-gray">8,450/10,000</span>
+                      </div>
+                      <div class="w-full bg-gray-200 rounded-full h-2">
+                          <div class="bg-bright-orange h-2 rounded-full" style="width: 84.5%"></div>
+                      </div>
+                  </div>
+                  <p class="text-xs text-gray-500">Today's goal</p>
+              </div>
+          </div>
+      </div>
+  </section>
+
+  <!-- Social & Sharing -->
+  <section id="social-sharing" class="p-4">
+      <h2 class="text-lg font-semibold text-dark-gray mb-3">Social &amp; Privacy</h2>
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+          <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center space-x-3">
+                  <i class="fa-solid fa-share-nodes text-sea-green"></i>
+                  <span class="font-medium text-dark-gray">Share Profile</span>
+              </div>
+              <div class="flex space-x-2">
+                  <i class="fa-brands fa-facebook text-blue-600"></i>
+                  <i class="fa-brands fa-instagram text-pink-500"></i>
+                  <i class="fa-brands fa-linkedin text-blue-700"></i>
+              </div>
+          </div>
+          
+          <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center space-x-3">
+                  <i class="fa-solid fa-lock text-gray-500"></i>
+                  <span class="font-medium text-dark-gray">Private Profile</span>
+              </div>
+              <div class="bg-sea-green w-12 h-6 rounded-full p-1 flex items-center">
+                  <div class="bg-white w-4 h-4 rounded-full transform translate-x-6 transition-transform"></div>
+              </div>
+          </div>
+          
+          <div class="flex items-center space-x-6 pt-3 border-t border-gray-100">
+              <div class="text-center">
+                  <p class="font-semibold text-dark-gray">248</p>
+                  <p class="text-xs text-gray-500">Followers</p>
+              </div>
+              <div class="text-center">
+                  <p class="font-semibold text-dark-gray">156</p>
+                  <p class="text-xs text-gray-500">Following</p>
+              </div>
+          </div>
+      </div>
+  </section>
+
+  <!-- Footer Navigation -->
+  <footer id="footer" class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2">
+      <div class="flex justify-around items-center">
+          <button class="flex flex-col items-center py-2">
+              <i class="fa-solid fa-house text-gray-400 mb-1"></i>
+              <span class="text-xs text-gray-400">Home</span>
+          </button>
+          <button class="flex flex-col items-center py-2">
+              <i class="fa-solid fa-chart-line text-gray-400 mb-1"></i>
+              <span class="text-xs text-gray-400">Activities</span>
+          </button>
+          <button class="flex flex-col items-center py-2">
+              <i class="fa-solid fa-trophy text-gray-400 mb-1"></i>
+              <span class="text-xs text-gray-400">Challenges</span>
+          </button>
+          <button class="flex flex-col items-center py-2">
+              <i class="fa-solid fa-user text-sea-green mb-1"></i>
+              <span class="text-xs text-sea-green font-medium">Profile</span>
+          </button>
+          <button class="flex flex-col items-center py-2">
+              <i class="fa-solid fa-cog text-gray-400 mb-1"></i>
+              <span class="text-xs text-gray-400">Settings</span>
+          </button>
+      </div>
+  </footer>
+
+  <!-- Bottom spacing for fixed footer -->
+  <div class="h-20"></div>
+
+
+</body></html>

@@ -1,0 +1,220 @@
+<html><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = {
+  "theme": {
+    "extend": {
+      "colors": {
+        "primary": "#252525",
+        "secondary": "#F7F7F7",
+        "accent": "#14A76C",
+        "orange": "#F7931E"
+      },
+      "fontFamily": {
+        "sans": [
+          "Inter",
+          "sans-serif"
+        ]
+      }
+    }
+  }
+};</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    
+    <style>::-webkit-scrollbar { display: none;}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;500;600;700;800;900&amp;display=swap"><style>
+      body {
+        font-family: 'Inter', sans-serif !important;
+      }
+      
+      /* Preserve Font Awesome icons */
+      .fa, .fas, .far, .fal, .fab {
+        font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands" !important;
+      }
+    </style><style>
+  .highlighted-section {
+    outline: 2px solid #3F20FB;
+    background-color: rgba(63, 32, 251, 0.1);
+  }
+
+  .edit-button {
+    position: absolute;
+    z-index: 1000;
+  }
+
+  ::-webkit-scrollbar {
+    display: none;
+  }
+
+  html, body {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  </style></head>
+<body class="bg-gray-50 font-sans">
+
+<!-- Header Section -->
+<header id="header" class="bg-white px-6 py-8">
+    <div class="text-center mb-2">
+        <div class="flex items-center justify-center mb-2">
+            <i class="fa-solid fa-bicycle text-accent text-2xl mr-2"></i>
+            <h1 class="text-2xl font-bold text-primary">Kerala Riders</h1>
+        </div>
+    </div>
+    <div class="text-center">
+        <h2 class="text-xl font-bold text-primary mb-2">Consent &amp; Privacy</h2>
+        <p class="text-sm text-gray-600 leading-relaxed">Please review and select your preferences. Required items must be accepted to continue.</p>
+    </div>
+</header>
+
+<!-- Main Content -->
+<main id="main-content" class="px-6 pb-20">
+
+    <!-- Required Consent Section -->
+    <section id="required-consent" class="mb-6">
+        <div class="flex items-center mb-4">
+            <i class="fa-solid fa-shield-halved text-gray-500 text-sm mr-2"></i>
+            <h3 class="text-lg font-semibold text-primary">Required (Cannot Uncheck)</h3>
+        </div>
+        
+        <!-- Account Functionality -->
+        <div id="consent-item-1" class="bg-gray-100 p-4 rounded-lg mb-3 border border-gray-200">
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <div class="flex items-center mb-2">
+                        <i class="fa-solid fa-user-gear text-accent text-sm mr-2"></i>
+                        <h4 class="font-medium text-primary">Account Functionality</h4>
+                        <span class="ml-2 text-xs bg-red-100 text-red-600 px-2 py-1 rounded">Required</span>
+                    </div>
+                    <p class="text-sm text-gray-600">Essential for creating and managing your account.</p>
+                </div>
+                <div class="ml-4">
+                    <div class="w-12 h-6 bg-accent rounded-full relative">
+                        <div class="w-5 h-5 bg-white rounded-full absolute top-0.5 right-0.5 flex items-center justify-center">
+                            <i class="fa-solid fa-lock text-gray-400 text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Community Features -->
+        <div id="consent-item-2" class="bg-gray-100 p-4 rounded-lg border border-gray-200">
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <div class="flex items-center mb-2">
+                        <i class="fa-solid fa-users text-accent text-sm mr-2"></i>
+                        <h4 class="font-medium text-primary">Community Features</h4>
+                        <span class="ml-2 text-xs bg-red-100 text-red-600 px-2 py-1 rounded">Required</span>
+                    </div>
+                    <p class="text-sm text-gray-600">Access to groups, leaderboards, and social interactions.</p>
+                </div>
+                <div class="ml-4">
+                    <div class="w-12 h-6 bg-accent rounded-full relative">
+                        <div class="w-5 h-5 bg-white rounded-full absolute top-0.5 right-0.5 flex items-center justify-center">
+                            <i class="fa-solid fa-lock text-gray-400 text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Optional Consent Section -->
+    <section id="optional-consent" class="mb-6">
+        <div class="flex items-center mb-4">
+            <i class="fa-solid fa-toggle-off text-gray-500 text-sm mr-2"></i>
+            <h3 class="text-lg font-semibold text-primary">Optional</h3>
+        </div>
+        
+        <!-- Marketing Communications -->
+        <div id="consent-item-3" class="bg-white p-4 rounded-lg mb-3 border border-gray-200">
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <div class="flex items-center mb-2">
+                        <i class="fa-solid fa-envelope text-orange text-sm mr-2"></i>
+                        <h4 class="font-medium text-primary">Marketing Communications</h4>
+                        <span class="ml-2 text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">Optional</span>
+                    </div>
+                    <p class="text-sm text-gray-600">Receive updates, newsletters, and promotional offers.</p>
+                </div>
+                <div class="ml-4">
+                    <button class="toggle-btn" onclick="toggleConsent(this)">
+                        <div class="w-12 h-6 bg-gray-300 rounded-full relative transition-colors">
+                            <div class="w-5 h-5 bg-white rounded-full absolute top-0.5 left-0.5 transition-transform"></div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Strava Data Sharing -->
+        <div id="consent-item-4" class="bg-white p-4 rounded-lg border border-gray-200">
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <div class="flex items-center mb-2">
+                        <i class="fa-brands fa-strava text-orange text-sm mr-2"></i>
+                        <h4 class="font-medium text-primary">Strava Data Sharing</h4>
+                        <span class="ml-2 text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">Optional</span>
+                    </div>
+                    <p class="text-sm text-gray-600">Connect with Strava to sync your runs and workouts.</p>
+                </div>
+                <div class="ml-4">
+                    <button class="toggle-btn" onclick="toggleConsent(this)">
+                        <div class="w-12 h-6 bg-gray-300 rounded-full relative transition-colors">
+                            <div class="w-5 h-5 bg-white rounded-full absolute top-0.5 left-0.5 transition-transform"></div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bottom Links -->
+    <section id="bottom-links" class="mb-8">
+        <div class="flex justify-between items-center">
+            <button class="flex items-center text-accent font-medium text-sm">
+                <i class="fa-solid fa-file-text mr-2"></i>
+                Privacy Policy
+            </button>
+            <button class="flex items-center text-accent font-medium text-sm">
+                <i class="fa-solid fa-cog mr-2"></i>
+                Manage My Data Rights
+            </button>
+        </div>
+    </section>
+
+    <!-- Action Buttons -->
+    <section id="action-buttons" class="space-y-3">
+        <button class="w-full bg-accent text-white py-3 rounded-lg font-semibold text-lg hover:bg-green-700 transition-colors">
+            Continue
+        </button>
+        <button class="w-full bg-white border border-gray-300 text-gray-700 py-3 rounded-lg font-semibold text-lg hover:bg-gray-50 transition-colors">
+            Cancel
+        </button>
+    </section>
+
+</main>
+
+<script>
+function toggleConsent(button) {
+    const toggle = button.querySelector('div');
+    const circle = button.querySelector('div > div');
+    
+    if (toggle.classList.contains('bg-gray-300')) {
+        toggle.classList.remove('bg-gray-300');
+        toggle.classList.add('bg-accent');
+        circle.classList.remove('left-0.5');
+        circle.classList.add('right-0.5');
+    } else {
+        toggle.classList.remove('bg-accent');
+        toggle.classList.add('bg-gray-300');
+        circle.classList.remove('right-0.5');
+        circle.classList.add('left-0.5');
+    }
+}
+</script>
+
+
+</body></html>

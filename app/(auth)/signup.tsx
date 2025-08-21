@@ -1,3 +1,4 @@
+import { AuthHeader } from "@/components/AuthHeader";
 import { CustomTextInput } from "@/components/CustomTextInput";
 import {
   CameraIcon,
@@ -11,8 +12,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { authHelpers } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Link, router } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
+import { Link, router } from "expo-router";
 import React, { useState } from "react";
 import {
   Alert,
@@ -32,9 +33,10 @@ export default function RegisterScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [profileImageFile, setProfileImageFile] = useState<ImagePicker.ImagePickerAsset | null>(null);
+  const [profileImageFile, setProfileImageFile] =
+    useState<ImagePicker.ImagePickerAsset | null>(null);
   const [imageUploading, setImageUploading] = useState(false);
-  const { signUp, loading, clearError } = useAuth();
+  const { signUp, signInWithGoogle, loading, clearError } = useAuth();
 
   const getPasswordStrength = (password: string) => {
     if (password.length < 6)
@@ -47,15 +49,19 @@ export default function RegisterScreen() {
   const passwordStrength = getPasswordStrength(password);
 
   const pickImage = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+
     if (permissionResult.granted === false) {
-      Alert.alert("Permission required", "Permission to access camera roll is required!");
+      Alert.alert(
+        "Permission required",
+        "Permission to access camera roll is required!"
+      );
       return;
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
+      mediaTypes: ["images"],
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
@@ -72,46 +78,59 @@ export default function RegisterScreen() {
 
     setImageUploading(true);
     try {
-      const fileExt = profileImageFile.uri.split('.').pop()?.toLowerCase() ?? 'jpg';
+      const fileExt =
+        profileImageFile.uri.split(".").pop()?.toLowerCase() ?? "jpg";
       const fileName = `profile.${fileExt}`;
-      
+
       // Convert image URI to ArrayBuffer
       const response = await fetch(profileImageFile.uri);
       if (!response.ok) {
         throw new Error(`Failed to fetch image: ${response.status}`);
       }
-      
+
       const arrayBuffer = await response.arrayBuffer();
-      
+
       // Determine contentType based on file extension
       const getContentType = (ext: string) => {
         switch (ext.toLowerCase()) {
-          case 'png': return 'image/png';
-          case 'jpg': case 'jpeg': return 'image/jpeg';
-          case 'gif': return 'image/gif';
-          case 'webp': return 'image/webp';
-          default: return 'image/jpeg';
+          case "png":
+            return "image/png";
+          case "jpg":
+          case "jpeg":
+            return "image/jpeg";
+          case "gif":
+            return "image/gif";
+          case "webp":
+            return "image/webp";
+          default:
+            return "image/jpeg";
         }
       };
 
       const { data, error } = await supabase.storage
-        .from('avatars')
+        .from("avatars")
         .upload(`${userId}/${fileName}`, arrayBuffer, {
           contentType: getContentType(fileExt),
-          cacheControl: '3600',
-          upsert: true
+          cacheControl: "3600",
+          upsert: true,
         });
 
       if (error) {
-        console.error('Upload error:', error);
-        Alert.alert('Upload Error', 'Failed to upload profile image. Please try again.');
+        console.error("Upload error:", error);
+        Alert.alert(
+          "Upload Error",
+          "Failed to upload profile image. Please try again."
+        );
         return null;
       }
 
       return data.path;
     } catch (error) {
-      console.error('Upload error:', error);
-      Alert.alert('Upload Error', 'Failed to upload profile image. Please check your internet connection.');
+      console.error("Upload error:", error);
+      Alert.alert(
+        "Upload Error",
+        "Failed to upload profile image. Please check your internet connection."
+      );
       return null;
     } finally {
       setImageUploading(false);
@@ -173,7 +192,7 @@ export default function RegisterScreen() {
       if (profileImageFile) {
         await uploadProfileImage(user.id);
       }
-      
+
       await AsyncStorage.setItem("pending_verification_email", email);
       setTimeout(() => {
         router.push("/(auth)/email-verification");
@@ -181,150 +200,197 @@ export default function RegisterScreen() {
     }
   };
 
+  const handleGoogleSignUp = async () => {
+    console.log("🟢 [Signup Page] Google sign-up button pressed");
+    clearError();
+
+    console.log("🔄 [Signup Page] Calling signInWithGoogle...");
+    const { user, error } = await signInWithGoogle();
+
+    console.log("📋 [Signup Page] Google sign-in result:", { 
+      user: user ? {
+        id: user.id,
+        email: user.email,
+        user_metadata: user.user_metadata
+      } : null,
+      error: error ? error.message : null
+    });
+
+    if (error) {
+      console.error("❌ [Signup Page] Google sign-up error:", error.message);
+      Alert.alert("Google Sign Up Error", error.message);
+      return;
+    }
+
+    if (user) {
+      console.log("✅ [Signup Page] Google sign-up successful, navigating to user-info");
+      // Navigate to user info page for additional details
+      router.push("/(auth)/user-info");
+    } else {
+      console.warn("⚠️ [Signup Page] No user returned but no error either");
+    }
+  };
+
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+    <SafeAreaView
+      style={styles.container}
+      edges={["top", "left", "right", "bottom"]}
+    >
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+      >
         <ThemedView style={styles.content}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>Kerala Riders</Text>
-          <Text style={styles.subtitle}>Create Your Account</Text>
-        </View>
+          {/* Header */}
+          <AuthHeader subtitle="Create Your Account" />
 
-        {/* Profile Picture Upload */}
-        <View style={styles.profileSection}>
-          <View style={styles.profileImageContainer}>
-            <View style={styles.profileImage}>
-              {profileImage ? (
-                <Image source={{ uri: profileImage }} style={styles.profileImagePreview} />
-              ) : (
-                <UserIcon width={32} height={32} color="#9CA3AF" />
-              )}
-            </View>
-            <TouchableOpacity style={styles.cameraButton} onPress={pickImage}>
-              <CameraIcon width={16} height={16} color="#FFFFFF" />
-            </TouchableOpacity>
-          </View>
-          {imageUploading && (
-            <Text style={styles.uploadingText}>Uploading image...</Text>
-          )}
-        </View>
-
-        {/* Form Fields */}
-        <View style={styles.formSection}>
-          {/* Full Name */}
-          <CustomTextInput
-            label="Full Name"
-            placeholder="Enter your full name"
-            value={fullName}
-            onChangeText={setFullName}
-            leftIcon={<UserIcon width={20} height={20} color="#9CA3AF" />}
-          />
-
-          {/* Email */}
-          <CustomTextInput
-            label="Email Address"
-            placeholder="Enter your email"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            leftIcon={<MailIcon width={20} height={20} color="#9CA3AF" />}
-          />
-
-          {/* Password */}
-          <View>
-            <CustomTextInput
-              label="Password"
-              placeholder="Create a password"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={!showPassword}
-              leftIcon={<LockIcon width={20} height={20} color="#9CA3AF" />}
-              rightIcon={<EyeIcon width={20} height={20} color="#9CA3AF" />}
-              onRightIconPress={() => setShowPassword(!showPassword)}
-            />
-            {password.length > 0 && (
-              <View style={styles.passwordStrengthContainer}>
-                <View style={styles.strengthBar}>
-                  <View
-                    style={[
-                      styles.strengthFill,
-                      {
-                        backgroundColor: passwordStrength.color,
-                      },
-                      { width: passwordStrength.width as any },
-                    ]}
+          {/* Profile Picture Upload */}
+          <View style={styles.profileSection}>
+            <View style={styles.profileImageContainer}>
+              <View style={styles.profileImage}>
+                {profileImage ? (
+                  <Image
+                    source={{ uri: profileImage }}
+                    style={styles.profileImagePreview}
                   />
-                </View>
-                <Text
-                  style={[
-                    styles.strengthText,
-                    { color: passwordStrength.color },
-                  ]}
-                >
-                  {passwordStrength.strength}
-                </Text>
+                ) : (
+                  <UserIcon width={32} height={32} color="#9CA3AF" />
+                )}
               </View>
+              <TouchableOpacity style={styles.cameraButton} onPress={pickImage}>
+                <CameraIcon width={16} height={16} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+            {imageUploading && (
+              <Text style={styles.uploadingText}>Uploading image...</Text>
             )}
           </View>
-        </View>
 
-        {/* Sign Up Button */}
-        <TouchableOpacity
-          style={styles.signUpButton}
-          disabled={loading || imageUploading}
-          onPress={handleSignUp}
-        >
-          {/* <Link href={"/(auth)/user-info"}> */}
-          <Text style={styles.signUpButtonText}>
-            {loading ? "Signing up..." : imageUploading ? "Uploading..." : "Sign Up"}
-          </Text>
-          {/* </Link> */}
-        </TouchableOpacity>
+          {/* Form Fields */}
+          <View style={styles.formSection}>
+            {/* Full Name */}
+            <CustomTextInput
+              label="Full Name"
+              placeholder="Enter your full name"
+              value={fullName}
+              onChangeText={setFullName}
+              leftIcon={<UserIcon width={20} height={20} color="#9CA3AF" />}
+            />
 
-        {/* Already have account */}
-        <View style={styles.loginLinkContainer}>
-          <Text style={styles.loginText}>Already have an account? </Text>
-          <Link href="/(auth)/signup" asChild>
-            <TouchableOpacity>
-              <Text style={styles.loginLink}>Log in</Text>
-            </TouchableOpacity>
-          </Link>
-        </View>
+            {/* Email */}
+            <CustomTextInput
+              label="Email Address"
+              placeholder="Enter your email"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              leftIcon={<MailIcon width={20} height={20} color="#9CA3AF" />}
+            />
 
-        {/* Divider */}
-        <View style={styles.dividerContainer}>
-          <View style={styles.divider} />
-          <Text style={styles.dividerText}>or</Text>
-          <View style={styles.divider} />
-        </View>
-
-        {/* Google Sign Up */}
-        <TouchableOpacity style={styles.googleButton}>
-          <Image
-            source={require("@/assets/images/icons/google.png")}
-            style={styles.googleLogo}
-          />
-          <Text style={styles.googleButtonText}>Sign up with Google</Text>
-        </TouchableOpacity>
-
-        {/* Terms and Conditions */}
-        <TouchableOpacity
-          style={styles.termsContainer}
-          onPress={() => setAgreeToTerms(!agreeToTerms)}
-        >
-          <View
-            style={[styles.checkbox, agreeToTerms && styles.checkboxChecked]}
-          >
-            {agreeToTerms && <Text style={styles.checkmark}>✓</Text>}
+            {/* Password */}
+            <View>
+              <CustomTextInput
+                label="Password"
+                placeholder="Create a password"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
+                leftIcon={<LockIcon width={20} height={20} color="#9CA3AF" />}
+                rightIcon={<EyeIcon width={20} height={20} color="#9CA3AF" />}
+                onRightIconPress={() => setShowPassword(!showPassword)}
+              />
+              {password.length > 0 && (
+                <View style={styles.passwordStrengthContainer}>
+                  <View style={styles.strengthBar}>
+                    <View
+                      style={[
+                        styles.strengthFill,
+                        {
+                          backgroundColor: passwordStrength.color,
+                        },
+                        { width: passwordStrength.width as any },
+                      ]}
+                    />
+                  </View>
+                  <Text
+                    style={[
+                      styles.strengthText,
+                      { color: passwordStrength.color },
+                    ]}
+                  >
+                    {passwordStrength.strength}
+                  </Text>
+                </View>
+              )}
+            </View>
           </View>
-          <Text style={styles.termsText}>
-            I agree to the{" "}
-            <Text style={styles.termsLink}>Terms & Conditions</Text> and{" "}
-            <Text style={styles.termsLink}>Privacy Policy</Text>
-          </Text>
-        </TouchableOpacity>
+
+          {/* Sign Up Button */}
+          <TouchableOpacity
+            style={styles.signUpButton}
+            disabled={loading || imageUploading}
+            onPress={handleSignUp}
+          >
+            {/* <Link href={"/(auth)/user-info"}> */}
+            <Text style={styles.signUpButtonText}>
+              {loading
+                ? "Signing up..."
+                : imageUploading
+                ? "Uploading..."
+                : "Sign Up"}
+            </Text>
+            {/* </Link> */}
+          </TouchableOpacity>
+
+          {/* Already have account */}
+          <View style={styles.loginLinkContainer}>
+            <Text style={styles.loginText}>Already have an account? </Text>
+            <Link href="/(auth)/login" asChild>
+              <TouchableOpacity>
+                <Text style={styles.loginLink}>Log in</Text>
+              </TouchableOpacity>
+            </Link>
+          </View>
+
+          {/* Divider */}
+          <View style={styles.dividerContainer}>
+            <View style={styles.divider} />
+            <Text style={styles.dividerText}>or</Text>
+            <View style={styles.divider} />
+          </View>
+
+          {/* Google Sign Up */}
+          <TouchableOpacity 
+            style={styles.googleButton}
+            onPress={handleGoogleSignUp}
+            disabled={loading}
+          >
+            <Image
+              source={require("@/assets/images/icons/google.png")}
+              style={styles.googleLogo}
+            />
+            <Text style={styles.googleButtonText}>
+              {loading ? "Signing up..." : "Sign up with Google"}
+            </Text>
+          </TouchableOpacity>
+
+          {/* Terms and Conditions */}
+          <TouchableOpacity
+            style={styles.termsContainer}
+            onPress={() => setAgreeToTerms(!agreeToTerms)}
+          >
+            <View
+              style={[styles.checkbox, agreeToTerms && styles.checkboxChecked]}
+            >
+              {agreeToTerms && <Text style={styles.checkmark}>✓</Text>}
+            </View>
+            <Text style={styles.termsText}>
+              I agree to the{" "}
+              <Text style={styles.termsLink}>Terms & Conditions</Text> and{" "}
+              <Text style={styles.termsLink}>Privacy Policy</Text>
+            </Text>
+          </TouchableOpacity>
         </ThemedView>
       </ScrollView>
     </SafeAreaView>
@@ -343,21 +409,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 24,
     paddingBottom: 40,
-  },
-  header: {
-    alignItems: "center",
-    paddingVertical: 28,
-    paddingHorizontal: 24,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#252525",
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: "#6B7280",
   },
   titleContainer: {
     flexDirection: "row",

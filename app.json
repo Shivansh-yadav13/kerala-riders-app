@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "kerala-riders-app",
-    "slug": "kerala-riders-app",
+    "name": "Kerala Riders",
+    "slug": "kerala_riders_app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -9,13 +9,15 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.kerala-riders.kerala-riders-app"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
+      "package": "com.kerala_riders.kerala_riders_app",
       "edgeToEdgeEnabled": true
     },
     "web": {
@@ -25,6 +27,7 @@
     },
     "plugins": [
       "expo-router",
+      "@react-native-google-signin/google-signin",
       [
         "expo-splash-screen",
         {

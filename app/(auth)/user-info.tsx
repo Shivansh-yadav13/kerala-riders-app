@@ -209,23 +209,23 @@ export default function UserInfoScreen() {
 
   const generateKRID = async (activityCategory: string): Promise<string> => {
     const activityCodes: { [key: string]: string } = {
-      "runner": "01",
-      "swimmer": "02",
-      "rider": "03",
+      runner: "01",
+      swimmer: "02",
+      rider: "03",
       "run-and-ride": "04",
       "run-and-swim": "05",
       "ride-and-swim": "06",
-      "triathlete": "07",
+      triathlete: "07",
     };
 
     const currentYear = new Date().getFullYear().toString().slice(-2);
     const activityCode = activityCodes[activityCategory] || "00";
-    
+
     // Get next member number (this would typically come from a database)
     // For now, we'll use a random number between 1-999
     const memberNumber = Math.floor(Math.random() * 999) + 1;
     const paddedMemberNumber = memberNumber.toString().padStart(3, "0");
-    
+
     return `kr/${activityCode}/${currentYear}/${paddedMemberNumber}`;
   };
 
@@ -255,124 +255,133 @@ export default function UserInfoScreen() {
     };
 
     const { error } = await updateProfile(userInfoData);
-    
+
     if (error) {
-      Alert.alert("Error", "Failed to save user information. Please try again.");
+      Alert.alert(
+        "Error",
+        "Failed to save user information. Please try again."
+      );
       return;
     }
 
-    router.push("/(auth)/email-verification");
+    router.push("/(auth)/mobile-verification");
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+    <SafeAreaView
+      style={styles.container}
+      edges={["top", "left", "right", "bottom"]}
+    >
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+      >
         <ThemedView style={styles.content}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>Kerala Riders</Text>
-          <Text style={styles.subtitle}>Complete Your Profile</Text>
-        </View>
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={styles.title}>Kerala Riders</Text>
+            <Text style={styles.subtitle}>Complete Your Profile</Text>
+          </View>
 
-        {/* Form */}
-        <View style={styles.formSection}>
-          {/* WhatsApp Number */}
-          <View style={styles.fieldContainer}>
-            <Text style={styles.label}>WhatsApp Number</Text>
-            <Text style={styles.helpText}>
-              Please enter a UAE number thats available on WhatsApp
-            </Text>
-            <CustomTextInput
-              placeholder="50 123 4567"
-              value={whatsappNumber}
-              onChangeText={setWhatsappNumber}
-              keyboardType="phone-pad"
-              leftIcon={
-                <View style={styles.whatsappPrefixContainer}>
-                  <WhatsAppIcon width={20} height={20} />
-                  <Text style={styles.countryCodeText}>+971</Text>
-                </View>
-              }
+          {/* Form */}
+          <View style={styles.formSection}>
+            {/* WhatsApp Number */}
+            <View style={styles.fieldContainer}>
+              <Text style={styles.label}>WhatsApp Number</Text>
+              <Text style={styles.helpText}>
+                Please enter a UAE number thats available on WhatsApp
+              </Text>
+              <CustomTextInput
+                placeholder="50 123 4567"
+                value={whatsappNumber}
+                onChangeText={setWhatsappNumber}
+                keyboardType="phone-pad"
+                leftIcon={
+                  <View style={styles.whatsappPrefixContainer}>
+                    <WhatsAppIcon width={20} height={20} />
+                    <Text style={styles.countryCodeText}>+971</Text>
+                  </View>
+                }
+              />
+            </View>
+
+            {/* Gender */}
+            <CustomSelect
+              label="Gender"
+              placeholder="Select gender"
+              value={gender}
+              options={genderOptions}
+              onValueChange={setGender}
+              leftIcon={<GenderIcon width={20} height={20} />}
+            />
+
+            {/* Activity Category */}
+            <CustomSelect
+              label="Activity Category"
+              placeholder="Select your activity"
+              value={activityCategory}
+              options={activityCategoryOptions}
+              onValueChange={setActivityCategory}
+              leftIcon={<ActivityIcon width={20} height={20} />}
+            />
+
+            {/* Country */}
+            <CustomSelect
+              label="Country"
+              placeholder="Select country"
+              value={country}
+              options={countryOptions}
+              onValueChange={handleCountryChange}
+              leftIcon={<CountryIcon width={20} height={20} />}
+            />
+
+            {/* UAE Emirate - Only show if UAE is selected */}
+            {isUAE && (
+              <CustomSelect
+                label="UAE Emirate"
+                placeholder="Select emirate"
+                value={emirate}
+                options={emirateOptions}
+                onValueChange={handleEmirateChange}
+                leftIcon={<LocationIcon width={20} height={20} />}
+              />
+            )}
+
+            {/* City - Only show if UAE is selected */}
+            {isUAE && (
+              <CustomSelect
+                label="City"
+                placeholder="Select city"
+                value={city}
+                options={cityOptions}
+                onValueChange={setCity}
+                leftIcon={<BuildingIcon width={20} height={20} />}
+                disabled={!emirate}
+              />
+            )}
+
+            {/* Kerala District */}
+            <CustomSelect
+              label="Kerala District"
+              placeholder="Select Kerala district"
+              value={keralaDistrict}
+              options={keralaDistrictOptions}
+              onValueChange={setKeralaDistrict}
+              leftIcon={<MountainIcon width={20} height={20} />}
+              optional={true}
             />
           </View>
 
-          {/* Gender */}
-          <CustomSelect
-            label="Gender"
-            placeholder="Select gender"
-            value={gender}
-            options={genderOptions}
-            onValueChange={setGender}
-            leftIcon={<GenderIcon width={20} height={20} />}
-          />
-
-          {/* Activity Category */}
-          <CustomSelect
-            label="Activity Category"
-            placeholder="Select your activity"
-            value={activityCategory}
-            options={activityCategoryOptions}
-            onValueChange={setActivityCategory}
-            leftIcon={<ActivityIcon width={20} height={20} />}
-          />
-
-          {/* Country */}
-          <CustomSelect
-            label="Country"
-            placeholder="Select country"
-            value={country}
-            options={countryOptions}
-            onValueChange={handleCountryChange}
-            leftIcon={<CountryIcon width={20} height={20} />}
-          />
-
-          {/* UAE Emirate - Only show if UAE is selected */}
-          {isUAE && (
-            <CustomSelect
-              label="UAE Emirate"
-              placeholder="Select emirate"
-              value={emirate}
-              options={emirateOptions}
-              onValueChange={handleEmirateChange}
-              leftIcon={<LocationIcon width={20} height={20} />}
-            />
-          )}
-
-          {/* City - Only show if UAE is selected */}
-          {isUAE && (
-            <CustomSelect
-              label="City"
-              placeholder="Select city"
-              value={city}
-              options={cityOptions}
-              onValueChange={setCity}
-              leftIcon={<BuildingIcon width={20} height={20} />}
-              disabled={!emirate}
-            />
-          )}
-
-          {/* Kerala District */}
-          <CustomSelect
-            label="Kerala District"
-            placeholder="Select Kerala district"
-            value={keralaDistrict}
-            options={keralaDistrictOptions}
-            onValueChange={setKeralaDistrict}
-            leftIcon={<MountainIcon width={20} height={20} />}
-            optional={true}
-          />
-        </View>
-
-        {/* Continue Button */}
-        <TouchableOpacity
-          style={styles.continueButton}
-          onPress={handleContinue}
-          disabled={loading}
-        >
-          <Text style={styles.continueButtonText}>
-            {loading ? "Saving..." : "Continue"}
-          </Text>
-        </TouchableOpacity>
+          {/* Continue Button */}
+          <TouchableOpacity
+            style={styles.continueButton}
+            onPress={handleContinue}
+            disabled={loading}
+          >
+            <Text style={styles.continueButtonText}>
+              {loading ? "Saving..." : "Continue"}
+            </Text>
+          </TouchableOpacity>
         </ThemedView>
       </ScrollView>
     </SafeAreaView>
