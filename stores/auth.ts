@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AuthError, Session, User } from "@supabase/supabase-js";
+import axios from "axios";
 import * as WebBrowser from "expo-web-browser";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
@@ -41,6 +42,10 @@ interface AuthActions {
     user: User | null;
     error: AuthError | null;
   }>;
+  signInWithStrava: () => Promise<{
+    user: User | null;
+    error: AuthError | null;
+  }>;
   signInOTPVerification: (
     email: string,
     token: string
@@ -65,6 +70,123 @@ export const useAuthStore = create<AuthStore>()(
       loading: false,
       initialized: false,
       error: null,
+
+      signInWithStrava: async () => {
+        console.log("🚀 [Strava Sign-in] Starting Strava OAuth flow...");
+        set({ loading: true, error: null });
+
+        try {
+          const STRAVA_CLIENT_ID = 173716;
+          const STRAVA_CLIENT_SECRET =
+            "6a07e6d7563960d4d0596ed8d6ff3a7146b943b6";
+          const REDIRECT_URI = "keralaridersapp://strava-auth";
+          const result = await WebBrowser.openAuthSessionAsync(
+            `http://www.strava.com/oauth/authorize?client_id=${STRAVA_CLIENT_ID}&response_type=code&redirect_uri=${REDIRECT_URI}&approval_prompt=force&scope=read`,
+            REDIRECT_URI
+          );
+
+          if (result.type === "success" && result.url) {
+            console.log(
+              "✅ [Strava Sign-in] Auth session successful, callback URL:",
+              result.url
+            );
+
+            const url = new URL(result.url);
+            const params = new URLSearchParams(url.hash.slice(1));
+
+            console.log(
+              "🔍 [Strava Sign-in] URL hash params:",
+              Object.fromEntries(params.entries())
+            );
+
+            const auth_code = params.get("code");
+
+            if (auth_code) {
+              try {
+                const request = await axios.post(
+                  `http://www.strava.com/oauth/token?client_id=${STRAVA_CLIENT_ID}&client_secret=${STRAVA_CLIENT_SECRET}&code=${auth_code}&grant_type=authorization_code`
+                );
+                const refereshToken = request.data.refresh_token;
+                const accessToken = request.data.access_token;
+
+                // Store Strava tokens in user's metadata
+                const stravaAthleteId = request.data.athlete.id;
+
+                const { user } = get();
+                if (!user) {
+                  console.error(
+                    "❌ [Strava Sign-in] No authenticated user found"
+                  );
+                  throw new Error(
+                    "User must be authenticated before linking Strava"
+                  );
+                }
+
+                // Update user metadata with Strava tokens
+                const { error: updateError } = await supabase.auth.updateUser({
+                  data: {
+                    strava_access_token: accessToken,
+                    strava_refresh_token: refereshToken,
+                    strava_athlete_id: stravaAthleteId,
+                  },
+                });
+
+                if (updateError) {
+                  console.error(
+                    "❌ [Strava Sign-in] Failed to update user metadata:",
+                    updateError
+                  );
+                  throw new Error("Failed to store Strava credentials");
+                }
+
+                // Update the user in the store with new metadata
+                const updatedUser = {
+                  ...user,
+                  user_metadata: {
+                    ...user.user_metadata,
+                    strava_access_token: accessToken,
+                    strava_refresh_token: refereshToken,
+                    strava_athlete_id: stravaAthleteId,
+                  },
+                };
+
+                set({ user: updatedUser, loading: false });
+
+                console.log(
+                  "✅ [Strava Sign-in] Successfully linked Strava account"
+                );
+                return { user: updatedUser, error: null };
+              } catch (error) {
+                console.error("❌ [Strava Sign-in] Session error:", error);
+                set({ error: "Strava Session Error", loading: false });
+                return {
+                  user: null,
+                  error: { message: "Strava Session Error" } as AuthError,
+                };
+              }
+            } else {
+              console.error("❌ [Strava Sign-in] Missing tokens from callback");
+              throw new Error("No access token received from Google OAuth");
+            }
+          } else if (result.type === "cancel") {
+            console.log("🚫 [Strava Sign-in] User cancelled the sign-in");
+            throw new Error("Strava sign-in was cancelled");
+          } else {
+            console.error(
+              "❌ [Strava Sign-in] WebBrowser result not successful:",
+              result
+            );
+            throw new Error("Strava sign-in failed");
+          }
+        } catch (error: any) {
+          const errorMessage =
+            error.message ||
+            "An unexpected error occurred during Strava sign-in";
+          console.error("💥 [Strava Sign-in] Final catch error:", error);
+          set({ error: errorMessage, loading: false });
+          return { user: null, error: { message: errorMessage } as AuthError };
+        }
+      },
 
       signInWithGoogle: async () => {
         console.log("🚀 [Google Sign-in] Starting Google OAuth flow...");
@@ -163,33 +285,55 @@ export const useAuthStore = create<AuthStore>()(
                     app_metadata: sessionData.user.app_metadata,
                   });
 
-                  // Extract user data from Google profile
-                  const userData = {
-                    full_name:
-                      sessionData.user.user_metadata?.full_name ||
-                      sessionData.user.user_metadata?.name ||
-                      "",
-                    is_active: true,
-                    is_data_consent: false,
-                    is_email_verified: true, // Google accounts are pre-verified
-                    is_mobile_verified: false,
-                    phone_number: null,
-                    gender: null,
-                    uae_emirate: null,
-                    city: null,
-                    kerala_district: null,
-                  };
-
-                  console.log(
-                    "📝 [Google Sign-in] Prepared user data:",
-                    userData
-                  );
-
-                  // Update user metadata with additional profile data
-                  console.log("🔄 [Google Sign-in] Updating user metadata...");
-                  await supabase.auth.updateUser({
-                    data: userData,
+                  // Check if this is an existing user and their authentication providers
+                  const userProviders = sessionData.user.app_metadata?.providers || [];
+                  const isExistingUser = sessionData.user.created_at !== sessionData.user.updated_at || 
+                                       sessionData.user.user_metadata?.is_active !== undefined;
+                  
+                  console.log("🔍 [Google Sign-in] User check:", {
+                    isExistingUser,
+                    providers: userProviders,
+                    createdAt: sessionData.user.created_at,
+                    updatedAt: sessionData.user.updated_at
                   });
+
+                  // If user exists but was created with a different provider (not Google)
+                  if (isExistingUser && userProviders.length > 0 && !userProviders.includes('google')) {
+                    console.log("❌ [Google Sign-in] User exists with different provider:", userProviders);
+                    await supabase.auth.signOut(); // Sign out the Google session
+                    set({ error: "This email is already registered with a different login method. Please use your password to sign in.", loading: false });
+                    return { user: null, error: { message: "This email is already registered with a different login method. Please use your password to sign in." } as AuthError };
+                  }
+
+                  // Only update metadata for new users or if metadata is incomplete
+                  const shouldUpdateMetadata = !isExistingUser || 
+                                             !sessionData.user.user_metadata?.is_active ||
+                                             !sessionData.user.user_metadata?.full_name;
+
+                  if (shouldUpdateMetadata) {
+                    const userData = {
+                      full_name:
+                        sessionData.user.user_metadata?.full_name ||
+                        sessionData.user.user_metadata?.name ||
+                        "",
+                      is_active: true,
+                      is_data_consent: false,
+                      is_email_verified: true, // Google accounts are pre-verified
+                      is_mobile_verified: false,
+                      phone_number: null,
+                      gender: null,
+                      uae_emirate: null,
+                      city: null,
+                      kerala_district: null,
+                    };
+
+                    console.log("📝 [Google Sign-in] Updating user metadata:", userData);
+                    await supabase.auth.updateUser({
+                      data: userData,
+                    });
+                  } else {
+                    console.log("✅ [Google Sign-in] Existing user with complete metadata - skipping update");
+                  }
 
                   const userWithProfile = {
                     ...sessionData.user,

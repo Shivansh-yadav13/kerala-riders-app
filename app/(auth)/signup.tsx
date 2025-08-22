@@ -201,19 +201,18 @@ export default function RegisterScreen() {
   };
 
   const handleGoogleSignUp = async () => {
-    console.log("🟢 [Signup Page] Google sign-up button pressed");
     clearError();
-
-    console.log("🔄 [Signup Page] Calling signInWithGoogle...");
     const { user, error } = await signInWithGoogle();
 
-    console.log("📋 [Signup Page] Google sign-in result:", { 
-      user: user ? {
-        id: user.id,
-        email: user.email,
-        user_metadata: user.user_metadata
-      } : null,
-      error: error ? error.message : null
+    console.log("📋 [Signup Page] Google sign-in result:", {
+      user: user
+        ? {
+            id: user.id,
+            email: user.email,
+            user_metadata: user.user_metadata,
+          }
+        : null,
+      error: error ? error.message : null,
     });
 
     if (error) {
@@ -223,7 +222,9 @@ export default function RegisterScreen() {
     }
 
     if (user) {
-      console.log("✅ [Signup Page] Google sign-up successful, navigating to user-info");
+      console.log(
+        "✅ [Signup Page] Google sign-up successful, navigating to user-info"
+      );
       // Navigate to user info page for additional details
       router.push("/(auth)/user-info");
     } else {
@@ -261,9 +262,9 @@ export default function RegisterScreen() {
                 <CameraIcon width={16} height={16} color="#FFFFFF" />
               </TouchableOpacity>
             </View>
-            {imageUploading && (
+            {/* {imageUploading && (
               <Text style={styles.uploadingText}>Uploading image...</Text>
-            )}
+            )} */}
           </View>
 
           {/* Form Fields */}
@@ -361,7 +362,7 @@ export default function RegisterScreen() {
           </View>
 
           {/* Google Sign Up */}
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.googleButton}
             onPress={handleGoogleSignUp}
             disabled={loading}

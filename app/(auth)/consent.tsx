@@ -137,7 +137,12 @@ export default function ConsentScreen() {
       return;
     }
 
-    router.push("/(app)/user-profile");
+    // If user opted for Strava data sharing, redirect to Strava auth
+    if (stravaConsent) {
+      router.push("/(auth)/strava-auth");
+    } else {
+      router.push("/(app)/user-profile");
+    }
   };
 
   const handleCancel = () => {
@@ -291,7 +296,8 @@ export default function ConsentScreen() {
 
           {/* Note */}
           <Text style={styles.noteText}>
-            Mandatory features are required to provide core services. You may change or withdraw consent for optional features anytime.
+            Mandatory features are required to provide core services. You may
+            change or withdraw consent for optional features anytime.
           </Text>
 
           {/* Action Buttons */}
