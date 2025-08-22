@@ -1,6 +1,8 @@
+import { useAuthStore } from "@/stores/auth";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import {
+  Alert,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -11,6 +13,26 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ActivitiesScreen() {
+  const { signInWithStrava, loading, user } = useAuthStore();
+
+  const handleConnectStrava = async () => {
+    try {
+      const { user, error } = await signInWithStrava();
+
+      if (error) {
+        Alert.alert("Strava Connection Error", error.message);
+      } else if (user) {
+        Alert.alert(
+          "✅ Strava Authentication Successful!",
+          "Your Strava account has been successfully connected."
+        );
+      }
+    } catch {
+      Alert.alert("Error", "Failed to connect to Strava. Please try again.");
+    }
+  };
+
+  const isStravaConnected = user?.user_metadata?.strava_access_token;
   return (
     <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
@@ -19,6 +41,53 @@ export default function ActivitiesScreen() {
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
       >
+        {/* Add Activity Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Add Activity</Text>
+          <View style={styles.addActivityRow}>
+            <TouchableOpacity style={styles.addActivityButton}>
+              <View style={styles.addActivityIcon}>
+                <Ionicons name="add-circle-outline" size={24} color="#14A76C" />
+              </View>
+              <View style={styles.addActivityContent}>
+                <Text style={styles.addActivityTitle}>Manual Activity</Text>
+                <Text style={styles.addActivitySubtitle}>
+                  Log your ride or run manually
+                </Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.addActivityButton,
+                isStravaConnected && styles.connectedButton,
+              ]}
+              onPress={handleConnectStrava}
+              disabled={loading}
+            >
+              <View style={styles.addActivityIcon}>
+                <Ionicons
+                  name={isStravaConnected ? "checkmark-circle" : "bicycle"}
+                  size={24}
+                  color={isStravaConnected ? "#10B981" : "#FC4C02"}
+                />
+              </View>
+              <View style={styles.addActivityContent}>
+                <Text style={styles.addActivityTitle}>
+                  {isStravaConnected ? "Strava Connected" : "Connect Strava"}
+                </Text>
+                <Text style={styles.addActivitySubtitle}>
+                  {isStravaConnected
+                    ? "Activities will sync automatically"
+                    : loading
+                    ? "Connecting..."
+                    : "Sync activities from Strava"}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        </View>
+
         {/* Filter Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Activity Log</Text>
@@ -38,7 +107,7 @@ export default function ActivitiesScreen() {
         {/* Activities List */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Recent Activities</Text>
-          
+
           <View style={styles.activityCard}>
             <View style={styles.activityInfo}>
               <View style={[styles.activityIcon, styles.bikeIcon]}>
@@ -74,7 +143,9 @@ export default function ActivitiesScreen() {
           <View style={styles.emptyState}>
             <Ionicons name="time" size={48} color="#CCC" />
             <Text style={styles.emptyText}>No more activities</Text>
-            <Text style={styles.emptySubtext}>Start tracking your rides to see them here</Text>
+            <Text style={styles.emptySubtext}>
+              Start tracking your rides to see them here
+            </Text>
           </View>
         </View>
 
@@ -195,5 +266,37 @@ const styles = StyleSheet.create({
   },
   bottomSpacing: {
     height: 100,
+  },
+  addActivityRow: {
+    gap: 12,
+  },
+  addActivityButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    backgroundColor: "#F7F7F7",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "rgba(20, 167, 108, 0.1)",
+  },
+  addActivityIcon: {
+    marginRight: 12,
+  },
+  addActivityContent: {
+    flex: 1,
+  },
+  addActivityTitle: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#252525",
+    marginBottom: 2,
+  },
+  addActivitySubtitle: {
+    fontSize: 12,
+    color: "#666666",
+  },
+  connectedButton: {
+    backgroundColor: "rgba(16, 185, 129, 0.1)",
+    borderColor: "rgba(16, 185, 129, 0.2)",
   },
 });

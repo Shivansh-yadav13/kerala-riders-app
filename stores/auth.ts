@@ -79,7 +79,7 @@ export const useAuthStore = create<AuthStore>()(
           const STRAVA_CLIENT_ID = 173716;
           const STRAVA_CLIENT_SECRET =
             "6a07e6d7563960d4d0596ed8d6ff3a7146b943b6";
-          const REDIRECT_URI = "keralaridersapp://strava-auth";
+          const REDIRECT_URI = `https://keralariders-auth.vercel.app`;
           const result = await WebBrowser.openAuthSessionAsync(
             `http://www.strava.com/oauth/authorize?client_id=${STRAVA_CLIENT_ID}&response_type=code&redirect_uri=${REDIRECT_URI}&approval_prompt=force&scope=read`,
             REDIRECT_URI
@@ -92,10 +92,10 @@ export const useAuthStore = create<AuthStore>()(
             );
 
             const url = new URL(result.url);
-            const params = new URLSearchParams(url.hash.slice(1));
+            const params = new URLSearchParams(url.search);
 
             console.log(
-              "🔍 [Strava Sign-in] URL hash params:",
+              "🔍 [Strava Sign-in] URL query params:",
               Object.fromEntries(params.entries())
             );
 
@@ -104,7 +104,7 @@ export const useAuthStore = create<AuthStore>()(
             if (auth_code) {
               try {
                 const request = await axios.post(
-                  `http://www.strava.com/oauth/token?client_id=${STRAVA_CLIENT_ID}&client_secret=${STRAVA_CLIENT_SECRET}&code=${auth_code}&grant_type=authorization_code`
+                  `https://www.strava.com/oauth/token?client_id=${STRAVA_CLIENT_ID}&client_secret=${STRAVA_CLIENT_SECRET}&code=${auth_code}&grant_type=authorization_code`
                 );
                 const refereshToken = request.data.refresh_token;
                 const accessToken = request.data.access_token;
@@ -286,29 +286,50 @@ export const useAuthStore = create<AuthStore>()(
                   });
 
                   // Check if this is an existing user and their authentication providers
-                  const userProviders = sessionData.user.app_metadata?.providers || [];
-                  const isExistingUser = sessionData.user.created_at !== sessionData.user.updated_at || 
-                                       sessionData.user.user_metadata?.is_active !== undefined;
-                  
+                  const userProviders =
+                    sessionData.user.app_metadata?.providers || [];
+                  const isExistingUser =
+                    sessionData.user.created_at !==
+                      sessionData.user.updated_at ||
+                    sessionData.user.user_metadata?.is_active !== undefined;
+
                   console.log("🔍 [Google Sign-in] User check:", {
                     isExistingUser,
                     providers: userProviders,
                     createdAt: sessionData.user.created_at,
-                    updatedAt: sessionData.user.updated_at
+                    updatedAt: sessionData.user.updated_at,
                   });
 
                   // If user exists but was created with a different provider (not Google)
-                  if (isExistingUser && userProviders.length > 0 && !userProviders.includes('google')) {
-                    console.log("❌ [Google Sign-in] User exists with different provider:", userProviders);
+                  if (
+                    isExistingUser &&
+                    userProviders.length > 0 &&
+                    !userProviders.includes("google")
+                  ) {
+                    console.log(
+                      "❌ [Google Sign-in] User exists with different provider:",
+                      userProviders
+                    );
                     await supabase.auth.signOut(); // Sign out the Google session
-                    set({ error: "This email is already registered with a different login method. Please use your password to sign in.", loading: false });
-                    return { user: null, error: { message: "This email is already registered with a different login method. Please use your password to sign in." } as AuthError };
+                    set({
+                      error:
+                        "This email is already registered with a different login method. Please use your password to sign in.",
+                      loading: false,
+                    });
+                    return {
+                      user: null,
+                      error: {
+                        message:
+                          "This email is already registered with a different login method. Please use your password to sign in.",
+                      } as AuthError,
+                    };
                   }
 
                   // Only update metadata for new users or if metadata is incomplete
-                  const shouldUpdateMetadata = !isExistingUser || 
-                                             !sessionData.user.user_metadata?.is_active ||
-                                             !sessionData.user.user_metadata?.full_name;
+                  const shouldUpdateMetadata =
+                    !isExistingUser ||
+                    !sessionData.user.user_metadata?.is_active ||
+                    !sessionData.user.user_metadata?.full_name;
 
                   if (shouldUpdateMetadata) {
                     const userData = {
@@ -327,12 +348,17 @@ export const useAuthStore = create<AuthStore>()(
                       kerala_district: null,
                     };
 
-                    console.log("📝 [Google Sign-in] Updating user metadata:", userData);
+                    console.log(
+                      "📝 [Google Sign-in] Updating user metadata:",
+                      userData
+                    );
                     await supabase.auth.updateUser({
                       data: userData,
                     });
                   } else {
-                    console.log("✅ [Google Sign-in] Existing user with complete metadata - skipping update");
+                    console.log(
+                      "✅ [Google Sign-in] Existing user with complete metadata - skipping update"
+                    );
                   }
 
                   const userWithProfile = {

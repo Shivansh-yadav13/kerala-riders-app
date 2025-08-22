@@ -38,9 +38,10 @@ const EyeIcon = ({ width = 20, height = 20 }) => (
 );
 
 const GoogleIcon = () => (
-  <View style={styles.googleIconContainer}>
-    <Text style={styles.googleG}>G</Text>
-  </View>
+  <Image
+    source={require("@/assets/images/icons/google.png")}
+    style={styles.googleIcon}
+  />
 );
 
 export default function LoginScreen() {
@@ -268,18 +269,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "500",
   },
-  googleIconContainer: {
+  googleIcon: {
     width: 20,
     height: 20,
-    borderRadius: 4,
-    backgroundColor: "#4285F4",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  googleG: {
-    color: "#FFFFFF",
-    fontSize: 12,
-    fontWeight: "bold",
+    resizeMode: "contain",
   },
   footerLinks: {
     flexDirection: "row",
