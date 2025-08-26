@@ -1,4 +1,5 @@
 import { useAuthContext } from "@/contexts/AuthProvider";
+import { router } from "expo-router";
 import React from "react";
 import {
   Image,
@@ -124,7 +125,7 @@ export default function UserProfileScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Recent Activities</Text>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push("/(app)/activity-history")}>
               <Text style={styles.viewAllText}>View All</Text>
             </TouchableOpacity>
           </View>

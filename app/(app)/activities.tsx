@@ -1,4 +1,5 @@
 import { useAuthStore } from "@/stores/auth";
+// import { StravaTestComponent } from "@/components/StravaTestComponent";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import {

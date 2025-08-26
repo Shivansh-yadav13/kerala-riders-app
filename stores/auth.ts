@@ -8,20 +8,8 @@ import { createJSONStorage, persist } from "zustand/middleware";
 
 WebBrowser.maybeCompleteAuthSession();
 
-export interface AuthUser extends User {
-  profile?: {
-    full_name?: string;
-    avatar_url?: string;
-    phone?: string;
-    location?: string;
-    date_of_birth?: string;
-    gender?: string;
-    preferred_language?: string;
-  };
-}
-
 interface AuthState {
-  user: AuthUser | null;
+  user: User | null;
   session: Session | null;
   loading: boolean;
   initialized: boolean;
@@ -75,13 +63,23 @@ export const useAuthStore = create<AuthStore>()(
         console.log("🚀 [Strava Sign-in] Starting Strava OAuth flow...");
         set({ loading: true, error: null });
 
+        const scopes = [
+          "read",
+          "read_all",
+          "profile:read_all",
+          "profile:write",
+          "activity:read",
+          "activity:read_all",
+          "activity:write",
+        ].join(",");
+
         try {
           const STRAVA_CLIENT_ID = 173716;
           const STRAVA_CLIENT_SECRET =
             "6a07e6d7563960d4d0596ed8d6ff3a7146b943b6";
           const REDIRECT_URI = `https://keralariders-auth.vercel.app`;
           const result = await WebBrowser.openAuthSessionAsync(
-            `http://www.strava.com/oauth/authorize?client_id=${STRAVA_CLIENT_ID}&response_type=code&redirect_uri=${REDIRECT_URI}&approval_prompt=force&scope=read`,
+            `http://www.strava.com/oauth/authorize?client_id=${STRAVA_CLIENT_ID}&response_type=code&redirect_uri=${REDIRECT_URI}&approval_prompt=force&scope=${scopes}`,
             REDIRECT_URI
           );
 
@@ -122,7 +120,6 @@ export const useAuthStore = create<AuthStore>()(
                   );
                 }
 
-                // Update user metadata with Strava tokens
                 const { error: updateError } = await supabase.auth.updateUser({
                   data: {
                     strava_access_token: accessToken,
@@ -361,19 +358,8 @@ export const useAuthStore = create<AuthStore>()(
                     );
                   }
 
-                  const userWithProfile = {
-                    ...sessionData.user,
-                    profile: {
-                      full_name:
-                        sessionData.user.user_metadata?.full_name ||
-                        sessionData.user.user_metadata?.name ||
-                        "",
-                      avatar_url:
-                        sessionData.user.user_metadata?.avatar_url ||
-                        sessionData.user.user_metadata?.picture ||
-                        "",
-                    },
-                  };
+                  // Use the user as-is, since all data is in user_metadata
+                  const userWithProfile = sessionData.user;
 
                   console.log(
                     "👤 [Google Sign-in] Final user with profile:",
@@ -457,9 +443,8 @@ export const useAuthStore = create<AuthStore>()(
           }
 
           if (data.user && data.session) {
-            const userWithProfile = { ...data.user, profile: userData };
             set({
-              user: userWithProfile,
+              user: data.user,
               session: data.session,
               loading: false,
             });
@@ -633,7 +618,7 @@ export const useAuthStore = create<AuthStore>()(
         set({ loading: true, error: null });
 
         try {
-          const { error } = await supabase.auth.updateUser({
+          const { data, error } = await supabase.auth.updateUser({
             data: updates,
           });
 
@@ -642,9 +627,13 @@ export const useAuthStore = create<AuthStore>()(
             return { error };
           }
 
-          const updatedUser = {
+          // Use the updated user from the response to ensure we have the latest data
+          const updatedUser = data.user || {
             ...user,
-            profile: { ...user.profile, ...updates },
+            user_metadata: {
+              ...user.user_metadata,
+              ...updates,
+            },
           };
 
           set({ user: updatedUser, loading: false });

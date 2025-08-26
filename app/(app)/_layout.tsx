@@ -146,6 +146,50 @@ export default function AppLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="activity-history"
+        options={{
+          title: "Actvity History",
+          headerTitleStyle: {
+            fontSize: 18,
+            fontWeight: "600",
+            color: "#000",
+          },
+          headerStyle: {
+            backgroundColor: "#FFFFFF",
+          },
+          headerTitleAlign: "center",
+          headerShadowVisible: false,
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => {
+                if (router.canGoBack()) {
+                  router.back();
+                } else {
+                  router.replace("/(app)/user-profile");
+                }
+              }}
+              style={{ paddingLeft: 16, paddingRight: 8 }}
+            >
+              <Ionicons name="arrow-back" size={24} color="#000" />
+            </TouchableOpacity>
+          ),
+          tabBarIcon: ({ focused }) => (
+            <Image
+              source={require("@/assets/images/icons/user.png")}
+              style={{
+                width: 20,
+                height: 20,
+                tintColor: focused ? "#14A76C" : "#9CA3AF",
+                resizeMode: "contain",
+              }}
+            />
+          ),
+          tabBarHideOnKeyboard: true,
+          tabBarStyle: {},
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }

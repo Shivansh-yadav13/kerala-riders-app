@@ -40,21 +40,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     const user_metadata = auth.user?.user_metadata;
 
-    if (auth.isAuthenticated && user_metadata) {
-      if (!user_metadata.phone_number) {
+    if (auth.isAuthenticated && auth.user) {
+      const hasPhoneNumber = user_metadata?.phone_number;
+      const isEmailVerified = user_metadata?.is_email_verified;
+      const hasDataConsent = user_metadata?.is_data_consent;
+
+      if (!hasPhoneNumber) {
         router.replace("/(auth)/user-info");
-      } else if (!user_metadata.is_email_verified) {
+      } else if (!isEmailVerified) {
         router.replace("/(auth)/email-verification");
         // } else if (!user_metadata.is_mobile_verified) {
         //   router.replace("/(auth)/mobile-verification");
-      } else if (!user_metadata.is_data_consent) {
+      } else if (!hasDataConsent) {
         router.replace("/(auth)/consent");
       } else {
-        // User has completed all onboarding steps
         router.replace("/(app)/user-profile");
       }
     } else if (!auth.isAuthenticated && auth.initialized) {
-      // User is not authenticated, redirect to signup
       router.replace("/(auth)/signup");
     }
   }, [auth.user, auth.isAuthenticated, auth.initialized, auth.loading]);

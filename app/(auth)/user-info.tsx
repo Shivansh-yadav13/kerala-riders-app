@@ -2,7 +2,6 @@ import { CustomSelect } from "@/components/CustomSelect";
 import { CustomTextInput } from "@/components/CustomTextInput";
 import { ThemedView } from "@/components/ThemedView";
 import { useAuth } from "@/hooks/useAuth";
-import { router } from "expo-router";
 import React, { useState } from "react";
 import {
   Alert,
@@ -263,8 +262,6 @@ export default function UserInfoScreen() {
       );
       return;
     }
-
-    router.push("/(auth)/mobile-verification");
   };
 
   return (
