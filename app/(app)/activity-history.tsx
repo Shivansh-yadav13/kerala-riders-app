@@ -1,6 +1,18 @@
 import { useAuthContext } from "@/contexts/AuthProvider";
+import {
+  formatDate,
+  formatDistance,
+  formatDuration,
+  formatElevation,
+  formatSpeed,
+  formatTime,
+  getPreferredSpeedUnit,
+  getSportColor,
+  getSportIcon,
+} from "@/lib/units";
 import { useActivityStore } from "@/stores/activity";
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -24,70 +36,7 @@ type ActivityTypeFilter =
   | "swimming"
   | "strength";
 
-// Data formatting helpers
-const formatDuration = (seconds: number): string => {
-  const minutes = Math.floor(seconds / 60);
-  const hours = Math.floor(minutes / 60);
-
-  if (hours > 0) {
-    const remainingMinutes = minutes % 60;
-    return `${hours}h ${remainingMinutes}m`;
-  }
-  return `${minutes}m`;
-};
-
-const formatDistance = (meters: number): string => {
-  const km = meters / 1000;
-  return km < 10 ? km.toFixed(2) : km.toFixed(1);
-};
-
-const formatPace = (averageSpeed: number, sportType: string): string => {
-  if (!averageSpeed || averageSpeed === 0) return "-";
-
-  // For running and walking, show pace (min/km)
-  if (
-    sportType.toLowerCase().includes("run") ||
-    sportType.toLowerCase().includes("walk")
-  ) {
-    const paceMinPerKm = 1000 / (averageSpeed * 60); // Convert m/s to min/km
-    const minutes = Math.floor(paceMinPerKm);
-    const seconds = Math.round((paceMinPerKm - minutes) * 60);
-    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-  }
-
-  // For cycling, show speed (km/h)
-  const kmh = averageSpeed * 3.6; // Convert m/s to km/h
-  return kmh.toFixed(1);
-};
-
-const getPaceUnit = (sportType: string): string => {
-  if (
-    sportType.toLowerCase().includes("run") ||
-    sportType.toLowerCase().includes("walk")
-  ) {
-    return "min/km";
-  }
-  return "km/h";
-};
-
-const formatDate = (dateString: string): string => {
-  const date = new Date(dateString);
-  const options: Intl.DateTimeFormatOptions = {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  };
-  return date.toLocaleDateString("en-US", options);
-};
-
-const formatTime = (dateString: string): string => {
-  const date = new Date(dateString);
-  return date.toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  });
-};
+// Sport type filtering utilities
 
 const mapSportTypeToFilter = (sportType: string): ActivityTypeFilter => {
   const type = sportType.toLowerCase();
@@ -168,25 +117,8 @@ export default function ActivityHistoryScreen() {
     }
   };
 
-  const getActivityIcon = (sportType: string) => {
-    const type = sportType.toLowerCase();
-    if (type.includes("run")) return "walk";
-    if (
-      type.includes("bike") ||
-      type.includes("cycle") ||
-      type.includes("ride")
-    )
-      return "bicycle";
-    if (type.includes("walk")) return "walk";
-    if (type.includes("swim")) return "water";
-    if (
-      type.includes("strength") ||
-      type.includes("weight") ||
-      type.includes("gym")
-    )
-      return "barbell";
-    return "fitness";
-  };
+  // Use centralized sport icon utility
+  const getActivityIcon = (sportType: string) => getSportIcon(sportType);
 
   const getActivityIconStyle = (sportType: string) => {
     const mappedType = mapSportTypeToFilter(sportType);
@@ -206,23 +138,8 @@ export default function ActivityHistoryScreen() {
     }
   };
 
-  const getActivityIconColor = (sportType: string) => {
-    const mappedType = mapSportTypeToFilter(sportType);
-    switch (mappedType) {
-      case "running":
-        return "#14A76C";
-      case "cycling":
-        return "#F7931E";
-      case "walking":
-        return "#3B82F6";
-      case "swimming":
-        return "#06B6D4";
-      case "strength":
-        return "#8B5CF6";
-      default:
-        return "#6B7280";
-    }
-  };
+  // Use centralized sport color utility
+  const getActivityIconColor = (sportType: string) => getSportColor(sportType);
 
   const filteredActivities = activities.filter((activity) => {
     const matchesSearch = activity.name
@@ -231,7 +148,7 @@ export default function ActivityHistoryScreen() {
 
     if (selectedFilter === "all") return matchesSearch;
 
-    const activityType = mapSportTypeToFilter(activity.sportType);
+    const activityType = mapSportTypeToFilter(activity.type);
     const matchesFilter = activityType === selectedFilter;
 
     return matchesSearch && matchesFilter;
@@ -348,13 +265,13 @@ export default function ActivityHistoryScreen() {
                 <View
                   style={[
                     styles.activityIconContainer,
-                    getActivityIconStyle(activity.sportType),
+                    getActivityIconStyle(activity.type),
                   ]}
                 >
                   <Ionicons
-                    name={getActivityIcon(activity.sportType) as any}
+                    name={getActivityIcon(activity.type) as any}
                     size={20}
-                    color={getActivityIconColor(activity.sportType)}
+                    color={getActivityIconColor(activity.type)}
                   />
                 </View>
                 <View style={styles.activityDetails}>
@@ -375,39 +292,41 @@ export default function ActivityHistoryScreen() {
                 <Text style={styles.metricValue}>
                   {activity.distance ? formatDistance(activity.distance) : "-"}
                 </Text>
-                <Text style={styles.metricLabel}>km</Text>
+                <Text style={styles.metricLabel}>distance</Text>
               </View>
               <View style={styles.metricItem}>
                 <Text style={styles.metricValue}>
                   {activity.averageSpeed
-                    ? formatPace(activity.averageSpeed, activity.sportType)
+                    ? formatSpeed(
+                        activity.averageSpeed,
+                        activity.type,
+                        getPreferredSpeedUnit(activity.type)
+                      )
                     : "-"}
                 </Text>
-                <Text style={styles.metricLabel}>
-                  {getPaceUnit(activity.sportType)}
-                </Text>
+                <Text style={styles.metricLabel}>speed</Text>
               </View>
               <View style={styles.metricItem}>
                 <Text style={styles.metricValue}>
-                  {formatDuration(activity.movingTime)}
+                  {formatDuration(activity.movingTime!)}
                 </Text>
-                <Text style={styles.metricLabel}>duration</Text>
+                <Text style={styles.metricLabel}>time</Text>
               </View>
             </View>
 
             {/* Activity Footer with Stats */}
             <View style={styles.activityFooter}>
               <View style={styles.activityStats}>
-                {activity.totalElevation > 0 && (
+                {activity.totalElevation! > 0 && (
                   <View style={styles.statItem}>
                     <Ionicons name="trending-up" size={12} color="#666666" />
                     <Text style={styles.statText}>
-                      {activity.totalElevation}m elevation
+                      {formatElevation(activity.totalElevation!)} elevation
                     </Text>
                   </View>
                 )}
               </View>
-              <View style={styles.actionButtons}>
+              {/* <View style={styles.actionButtons}>
                 <TouchableOpacity style={styles.actionButton}>
                   <Ionicons name="heart-outline" size={20} color="#9CA3AF" />
                 </TouchableOpacity>
@@ -421,7 +340,7 @@ export default function ActivityHistoryScreen() {
                 <TouchableOpacity style={styles.actionButton}>
                   <Ionicons name="share-outline" size={20} color="#9CA3AF" />
                 </TouchableOpacity>
-              </View>
+              </View> */}
             </View>
           </View>
         ))}
@@ -445,7 +364,10 @@ export default function ActivityHistoryScreen() {
       </ScrollView>
 
       {/* Floating Action Button */}
-      <TouchableOpacity style={styles.fab}>
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => router.push("/(app)/add-activity")}
+      >
         <Ionicons name="add" size={24} color="#FFFFFF" />
       </TouchableOpacity>
     </SafeAreaView>
@@ -670,7 +592,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   metricValue: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "600",
     color: "#252525",
     marginBottom: 2,
@@ -683,9 +605,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    borderTopWidth: 1,
-    borderTopColor: "#F3F4F6",
-    paddingTop: 12,
   },
   activityStats: {
     flexDirection: "row",

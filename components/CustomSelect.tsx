@@ -131,11 +131,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: '#E5E7EB',
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    minHeight: 48,
+    minHeight: 56,
   },
   selectButtonDisabled: {
     backgroundColor: '#F9FAFB',

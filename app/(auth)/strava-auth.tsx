@@ -1,7 +1,11 @@
 import { ThemedView } from "@/components/ThemedView";
+import { useAuth } from "@/hooks/useAuth";
+import * as AuthSession from 'expo-auth-session';
 import { router } from "expo-router";
+import * as WebBrowser from 'expo-web-browser';
 import React, { useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Image,
   ScrollView,
@@ -9,12 +13,8 @@ import {
   Text,
   TouchableOpacity,
   View,
-  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import * as AuthSession from 'expo-auth-session';
-import * as WebBrowser from 'expo-web-browser';
-import { useAuth } from "@/hooks/useAuth";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -176,7 +176,7 @@ export default function StravaAuthScreen() {
 
           {/* Benefits Section */}
           <View style={styles.benefitsSection}>
-            <Text style={styles.benefitsTitle}>What you'll get:</Text>
+            {/* <Text style={styles.benefitsTitle}>What you'll get:</Text> */}
             
             <View style={styles.benefitItem}>
               <ActivityIcon width={20} height={20} />
@@ -198,7 +198,7 @@ export default function StravaAuthScreen() {
               </View>
             </View>
 
-            <View style={styles.benefitItem}>
+            {/* <View style={styles.benefitItem}>
               <GraphIcon width={20} height={20} />
               <View style={styles.benefitContent}>
                 <Text style={styles.benefitTitle}>Performance Analytics</Text>
@@ -206,7 +206,7 @@ export default function StravaAuthScreen() {
                   Get detailed insights into your training and performance
                 </Text>
               </View>
-            </View>
+            </View> */}
           </View>
 
           {/* Privacy Notice */}
@@ -266,19 +266,19 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingBottom: 40,
+    paddingBottom: 4,
   },
   header: {
     alignItems: "center",
     paddingVertical: 40,
-    marginBottom: 32,
+    marginBottom: 0,
   },
   title: {
     fontSize: 28,
     fontWeight: "bold",
     color: "#252525",
     marginTop: 16,
-    marginBottom: 12,
+    marginBottom: 2,
   },
   description: {
     fontSize: 16,
@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   benefitsSection: {
-    marginBottom: 32,
+    marginBottom: 12,
   },
   benefitsTitle: {
     fontSize: 20,
@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     padding: 16,
     borderRadius: 12,
-    marginBottom: 12,
+    marginBottom: 2,
     borderWidth: 1,
     borderColor: "#E5E7EB",
   },

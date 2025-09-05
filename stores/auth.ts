@@ -43,6 +43,8 @@ interface AuthActions {
   resetPassword: (email: string) => Promise<{ error: AuthError | null }>;
   updateProfile: (updates: any) => Promise<{ error: AuthError | null }>;
   refreshSession: () => Promise<void>;
+  refreshStravaToken: () => Promise<{ error: AuthError | null }>;
+  checkAndRefreshStravaToken: () => Promise<{ error: AuthError | null }>;
   clearError: () => void;
   initialize: () => Promise<void>;
   clearAllData: () => Promise<void>;
@@ -77,10 +79,10 @@ export const useAuthStore = create<AuthStore>()(
           const STRAVA_CLIENT_ID = 173716;
           const STRAVA_CLIENT_SECRET =
             "6a07e6d7563960d4d0596ed8d6ff3a7146b943b6";
-          const REDIRECT_URI = `https://keralariders-auth.vercel.app`;
+          const REDIRECT_URI = `https://keralariders.vercel.app/auth/strava/bridge?platform=mobile`;
           const result = await WebBrowser.openAuthSessionAsync(
-            `http://www.strava.com/oauth/authorize?client_id=${STRAVA_CLIENT_ID}&response_type=code&redirect_uri=${REDIRECT_URI}&approval_prompt=force&scope=${scopes}`,
-            REDIRECT_URI
+            `http://www.strava.com/oauth/authorize?client_id=${STRAVA_CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&approval_prompt=force&scope=${scopes}`,
+            `keralaridersapp://strava/callback`
           );
 
           if (result.type === "success" && result.url) {
@@ -104,8 +106,9 @@ export const useAuthStore = create<AuthStore>()(
                 const request = await axios.post(
                   `https://www.strava.com/oauth/token?client_id=${STRAVA_CLIENT_ID}&client_secret=${STRAVA_CLIENT_SECRET}&code=${auth_code}&grant_type=authorization_code`
                 );
-                const refereshToken = request.data.refresh_token;
+                const refreshToken = request.data.refresh_token;
                 const accessToken = request.data.access_token;
+                const expiresAt = request.data.expires_at;
 
                 // Store Strava tokens in user's metadata
                 const stravaAthleteId = request.data.athlete.id;
@@ -123,8 +126,9 @@ export const useAuthStore = create<AuthStore>()(
                 const { error: updateError } = await supabase.auth.updateUser({
                   data: {
                     strava_access_token: accessToken,
-                    strava_refresh_token: refereshToken,
+                    strava_refresh_token: refreshToken,
                     strava_athlete_id: stravaAthleteId,
+                    strava_expires_at: expiresAt,
                   },
                 });
 
@@ -142,8 +146,9 @@ export const useAuthStore = create<AuthStore>()(
                   user_metadata: {
                     ...user.user_metadata,
                     strava_access_token: accessToken,
-                    strava_refresh_token: refereshToken,
+                    strava_refresh_token: refreshToken,
                     strava_athlete_id: stravaAthleteId,
+                    strava_expires_at: expiresAt,
                   },
                 };
 
@@ -163,7 +168,7 @@ export const useAuthStore = create<AuthStore>()(
               }
             } else {
               console.error("❌ [Strava Sign-in] Missing tokens from callback");
-              throw new Error("No access token received from Google OAuth");
+              throw new Error("No access token received from Strava OAuth");
             }
           } else if (result.type === "cancel") {
             console.log("🚫 [Strava Sign-in] User cancelled the sign-in");
@@ -196,7 +201,8 @@ export const useAuthStore = create<AuthStore>()(
           const { data, error } = await supabase.auth.signInWithOAuth({
             provider: "google",
             options: {
-              skipBrowserRedirect: true,
+              // skipBrowserRedirect: true,
+              redirectTo: redirectUrl,
               queryParams: {
                 access_type: "offline",
                 prompt: "consent",
@@ -685,6 +691,107 @@ export const useAuthStore = create<AuthStore>()(
           });
         } catch (error) {
           console.error("Error clearing auth data:", error);
+        }
+      },
+
+      refreshStravaToken: async () => {
+        const { user } = get();
+        if (!user || !user.user_metadata?.strava_refresh_token) {
+          const error = { message: "No Strava refresh token found" } as AuthError;
+          set({ error: error.message });
+          return { error };
+        }
+
+        console.log("🔄 [Strava Refresh] Refreshing Strava access token...");
+
+        try {
+          const STRAVA_CLIENT_ID = 173716;
+          const STRAVA_CLIENT_SECRET = "6a07e6d7563960d4d0596ed8d6ff3a7146b943b6";
+          
+          const response = await axios.post(
+            "https://www.strava.com/oauth/token",
+            {
+              client_id: STRAVA_CLIENT_ID,
+              client_secret: STRAVA_CLIENT_SECRET,
+              grant_type: "refresh_token",
+              refresh_token: user.user_metadata.strava_refresh_token,
+            }
+          );
+
+          const { access_token, refresh_token, expires_at } = response.data;
+
+          const { error: updateError } = await supabase.auth.updateUser({
+            data: {
+              strava_access_token: access_token,
+              strava_refresh_token: refresh_token,
+              strava_expires_at: expires_at,
+            },
+          });
+
+          if (updateError) {
+            console.error("❌ [Strava Refresh] Failed to update tokens:", updateError);
+            set({ error: updateError.message });
+            return { error: updateError };
+          }
+
+          const updatedUser = {
+            ...user,
+            user_metadata: {
+              ...user.user_metadata,
+              strava_access_token: access_token,
+              strava_refresh_token: refresh_token,
+              strava_expires_at: expires_at,
+            },
+          };
+
+          set({ user: updatedUser });
+          console.log("🔄✅ [STRAVA TOKEN REFRESHED] Successfully refreshed Strava access token");
+          return { error: null };
+
+        } catch (error: any) {
+          const errorMessage = error.message || "Failed to refresh Strava token";
+          console.error("❌ [Strava Refresh] Error:", error);
+          set({ error: errorMessage });
+          return { error: { message: errorMessage } as AuthError };
+        }
+      },
+
+      checkAndRefreshStravaToken: async () => {
+        console.log("🔍 [Strava Token Check] Starting token check...");
+        const { user } = get();
+        
+        if (!user || !user.user_metadata?.strava_access_token) {
+          console.log("ℹ️ [Strava Token Check] No Strava access token found - user hasn't linked Strava");
+          return { error: null };
+        }
+
+        const expiresAt = user.user_metadata.strava_expires_at;
+        
+        // If no expiration time found, refresh the token
+        if (!expiresAt) {
+          console.log("⚠️ [Strava Token Check] No expiration time found - refreshing token...");
+          const result = await get().refreshStravaToken();
+          if (!result.error) {
+            console.log("🔄✅ [STRAVA TOKEN REFRESHED] Token refresh completed successfully (no expiry time)");
+          }
+          return result;
+        }
+
+        const currentTime = Math.floor(Date.now() / 1000);
+
+        console.log("🔍 [Strava Token Check] Current time:", currentTime, "Expires at:", expiresAt);
+        console.log("🔍 [Strava Token Check] Time until expiry:", expiresAt - currentTime, "seconds");
+
+        if (currentTime >= expiresAt) {
+          console.log("⚠️ [Strava Token Check] Token expired, refreshing...");
+          const result = await get().refreshStravaToken();
+          if (!result.error) {
+            console.log("🔄✅ [STRAVA TOKEN REFRESHED] Token refresh completed successfully");
+          }
+          return result;
+        } else {
+          console.log("✅ [Strava Token Check] Token is still valid");
+          return { error: null };
         }
       },
 

@@ -48,6 +48,12 @@ export default function AuthLayout() {
             headerShown: false,
           }}
         />
+        <Stack.Screen
+          name="strava-auth"
+          options={{
+            headerShown: false,
+          }}
+        />
       </Stack>
     </SafeAreaProvider>
   );

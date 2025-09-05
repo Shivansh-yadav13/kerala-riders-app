@@ -26,6 +26,8 @@ export const useAuth = () => {
     resetPassword: store.resetPassword,
     updateProfile: store.updateProfile,
     refreshSession: store.refreshSession,
+    refreshStravaToken: store.refreshStravaToken,
+    checkAndRefreshStravaToken: store.checkAndRefreshStravaToken,
     clearError: store.clearError,
   };
 };

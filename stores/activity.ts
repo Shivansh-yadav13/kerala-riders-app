@@ -1,3 +1,14 @@
+import {
+  formatDistance,
+  formatDuration,
+  formatElevation,
+  formatSpeed,
+  getPreferredSpeedUnit,
+  getSportColor,
+  getSportIcon,
+  type DistanceUnit,
+} from "@/lib/units";
+import { getAuthToken } from "@/utils";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
@@ -7,11 +18,11 @@ export interface Activity {
   id: string;
   name: string;
   type: string;
-  sportType: string;
-  distance: number; // in meters
-  movingTime: number; // in seconds (was duration)
-  elapsedTime: number; // in seconds
-  totalElevation: number; // in meters (was elevationGain)
+  sportType?: string;
+  distance?: number; // in meters
+  movingTime?: number; // in seconds (was duration)
+  elapsedTime?: number; // in seconds
+  totalElevation?: number; // in meters (was elevationGain)
   startDate: string; // ISO string
   startDateLocal: string; // ISO string
   timezone?: string;
@@ -24,7 +35,6 @@ export interface Activity {
   elevationGain?: number; // computed from totalElevation
   date?: Date; // computed from startDate
 }
-
 
 // API Response interfaces
 export interface ActivityApiResponse {
@@ -75,73 +85,39 @@ interface ActivityState {
 }
 
 interface ActivityActions {
-  addActivity: (activity: Omit<Activity, 'id'>) => void;
+  addActivity: (activity: Activity) => void;
+  createActivity: (activity: Activity) => Promise<void>;
   updateActivity: (id: string, updates: Partial<Activity>) => void;
   deleteActivity: (id: string) => void;
   clearActivities: () => void;
   clearError: () => void;
   // API actions
-  fetchActivities: (userIdentifier: string, filters?: ActivityFilters, replace?: boolean) => Promise<void>;
+  fetchActivities: (
+    userIdentifier: string,
+    filters?: ActivityFilters,
+    replace?: boolean
+  ) => Promise<void>;
   loadMoreActivities: (userIdentifier: string) => Promise<void>;
-  refreshActivities: (userIdentifier: string, filters?: ActivityFilters) => Promise<void>;
+  refreshActivities: (
+    userIdentifier: string,
+    filters?: ActivityFilters
+  ) => Promise<void>;
   setFilters: (filters: ActivityFilters) => void;
   // Helper to normalize API activities to legacy format
   normalizeActivity: (activity: Activity) => Activity;
+  // Formatting helpers
+  formatActivityDistance: (activity: Activity, unit?: DistanceUnit) => string;
+  formatActivityDuration: (activity: Activity) => string;
+  formatActivitySpeed: (activity: Activity) => string;
+  formatActivityElevation: (activity: Activity) => string;
+  getActivityIcon: (activity: Activity) => string;
+  getActivityColor: (activity: Activity) => string;
 }
 
 type ActivityStore = ActivityState & ActivityActions;
 
-const generateId = () => Math.random().toString(36).substr(2, 9);
-
 // API Configuration
-const API_BASE_URL = 'http://localhost:3000'; // Replace with your actual webapp URL in production
-
-// Helper to get auth token from the auth store
-const getAuthToken = async (): Promise<string> => {
-  try {
-    // First try to get from auth store directly (if available in current context)
-    const authState = useAuthStore.getState();
-    if (authState.session?.access_token) {
-      // Check if token is expired
-      const now = new Date().getTime() / 1000;
-      if (authState.session.expires_at && authState.session.expires_at < now) {
-        // Try to refresh the session
-        await authState.refreshSession();
-        const refreshedState = useAuthStore.getState();
-        if (refreshedState.session?.access_token) {
-          return refreshedState.session.access_token;
-        }
-      } else {
-        return authState.session.access_token;
-      }
-    }
-
-    // Fallback: Get the session from AsyncStorage (where auth store persists it)
-    const authStorage = await AsyncStorage.getItem('auth-storage');
-    if (!authStorage) {
-      throw new Error('No auth session found');
-    }
-
-    const authData = JSON.parse(authStorage);
-    const session = authData?.state?.session;
-    
-    if (!session?.access_token) {
-      throw new Error('No access token found in session');
-    }
-
-    // Check if token is expired
-    const now = new Date().getTime() / 1000;
-    if (session.expires_at && session.expires_at < now) {
-      throw new Error('Access token has expired');
-    }
-
-    return session.access_token;
-  } catch (error) {
-    console.error('Error getting auth token:', error);
-    throw new Error('Failed to get authentication token');
-  }
-};
-
+const API_BASE_URL = "http://localhost:3000";
 
 export const useActivityStore = create<ActivityStore>()(
   persist(
@@ -154,15 +130,76 @@ export const useActivityStore = create<ActivityStore>()(
       filters: null,
       isLoadingMore: false,
 
-      addActivity: (activity) => {
-        const newActivity: Activity = {
-          ...activity,
-          id: generateId(),
-        };
-        
+      addActivity: (newActivity) => {
         set((state) => ({
           activities: [...state.activities, newActivity],
         }));
+      },
+
+      createActivity: async (activity) => {
+        set({ loading: true, error: null });
+
+        try {
+          const token = await getAuthToken();
+          if (!token) {
+            throw new Error("No authentication token available");
+          }
+          const authState = useAuthStore.getState();
+          const userKRID = authState.user?.user_metadata.krid;
+
+          if (!userKRID) {
+            throw new Error("User KRID not available");
+          }
+          const activityData = {
+            activity,
+            user: {
+              krid: authState.user?.user_metadata.krid,
+              email: authState.user?.email,
+              name: authState.user?.user_metadata.full_name,
+              stravaAthleteId: authState.user?.user_metadata.strava_athlete_id,
+            },
+          };
+
+          const response = await fetch(
+            `${API_BASE_URL}/api/user/activity/add`,
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(activityData),
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error(
+              `API request failed: ${response.status} ${response.statusText}`
+            );
+          }
+
+          const result = await response.json();
+
+          if (!result.success) {
+            throw new Error(result.error || "API returned error response");
+          }
+
+          set((state) => ({
+            loading: false,
+            error: null,
+          }));
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : "Failed to create activity";
+          console.error("Error creating activity:", error);
+          set({
+            loading: false,
+            error: errorMessage,
+          });
+          throw error; // Re-throw so the component can handle it
+        }
       },
 
       updateActivity: (id, updates) => {
@@ -202,63 +239,79 @@ export const useActivityStore = create<ActivityStore>()(
       },
 
       // Fetch activities from API
-      fetchActivities: async (userIdentifier: string, filters?: ActivityFilters, replace: boolean = true) => {
+      fetchActivities: async (
+        userIdentifier: string,
+        filters?: ActivityFilters,
+        replace: boolean = true
+      ) => {
         set({ loading: true, error: null });
 
         try {
           const token = await getAuthToken();
           if (!token) {
-            throw new Error('No authentication token available');
+            throw new Error("No authentication token available");
           }
 
           // Build query parameters
           const params = new URLSearchParams();
-          
+
           // Determine if userIdentifier is email or krid
-          if (userIdentifier.includes('@')) {
-            params.append('email', userIdentifier);
+          if (userIdentifier.includes("@")) {
+            params.append("email", userIdentifier);
           } else {
-            params.append('krid', userIdentifier);
+            params.append("krid", userIdentifier);
           }
 
-          if (filters?.sportType) params.append('sportType', filters.sportType);
-          if (filters?.startDate) params.append('startDate', filters.startDate);
-          if (filters?.endDate) params.append('endDate', filters.endDate);
-          if (filters?.limit) params.append('limit', filters.limit.toString());
-          if (filters?.offset) params.append('offset', filters.offset.toString());
+          if (filters?.sportType) params.append("sportType", filters.sportType);
+          if (filters?.startDate) params.append("startDate", filters.startDate);
+          if (filters?.endDate) params.append("endDate", filters.endDate);
+          if (filters?.limit) params.append("limit", filters.limit.toString());
+          if (filters?.offset)
+            params.append("offset", filters.offset.toString());
 
-          const response = await fetch(`${API_BASE_URL}/api/user/activity/get-all?${params}`, {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-          });
+          const response = await fetch(
+            `${API_BASE_URL}/api/user/activity/get-all?${params}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
 
           if (!response.ok) {
-            throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+            throw new Error(
+              `API request failed: ${response.status} ${response.statusText}`
+            );
           }
 
           const data: ActivityApiResponse = await response.json();
 
           if (!data.success) {
-            throw new Error('API returned error response');
+            throw new Error("API returned error response");
           }
 
           // Normalize activities
-          const normalizedActivities = data.data.activities.map(get().normalizeActivity);
+          const normalizedActivities = data.data.activities.map(
+            get().normalizeActivity
+          );
 
           set((state) => ({
-            activities: replace ? normalizedActivities : [...state.activities, ...normalizedActivities],
+            activities: replace
+              ? normalizedActivities
+              : [...state.activities, ...normalizedActivities],
             pagination: data.data.pagination,
             filters: filters || null,
             loading: false,
             error: null,
             lastSyncedAt: new Date(),
           }));
-
         } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'Failed to fetch activities';
-          console.error('Error fetching activities:', error);
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : "Failed to fetch activities";
+          console.error("Error fetching activities:", error);
           set({
             loading: false,
             error: errorMessage,
@@ -269,7 +322,7 @@ export const useActivityStore = create<ActivityStore>()(
       // Load more activities (pagination)
       loadMoreActivities: async (userIdentifier: string) => {
         const { pagination, filters, isLoadingMore } = get();
-        
+
         if (isLoadingMore || !pagination?.hasMore) return;
 
         set({ isLoadingMore: true, error: null });
@@ -287,7 +340,10 @@ export const useActivityStore = create<ActivityStore>()(
       },
 
       // Refresh activities (clear and fetch from beginning)
-      refreshActivities: async (userIdentifier: string, filters?: ActivityFilters) => {
+      refreshActivities: async (
+        userIdentifier: string,
+        filters?: ActivityFilters
+      ) => {
         const refreshFilters = { ...filters, offset: 0 };
         await get().fetchActivities(userIdentifier, refreshFilters, true);
       },
@@ -295,6 +351,36 @@ export const useActivityStore = create<ActivityStore>()(
       // Set filters
       setFilters: (filters: ActivityFilters) => {
         set({ filters });
+      },
+
+      // Formatting helpers
+      formatActivityDistance: (activity: Activity, unit?: DistanceUnit) => {
+        return formatDistance(activity.distance!, unit);
+      },
+
+      formatActivityDuration: (activity: Activity) => {
+        return formatDuration(activity.movingTime!);
+      },
+
+      formatActivitySpeed: (activity: Activity) => {
+        const preferredUnit = getPreferredSpeedUnit(activity.type);
+        return formatSpeed(
+          activity.averageSpeed || 0,
+          activity.type,
+          preferredUnit
+        );
+      },
+
+      formatActivityElevation: (activity: Activity) => {
+        return formatElevation(activity.totalElevation!);
+      },
+
+      getActivityIcon: (activity: Activity) => {
+        return getSportIcon(activity.sportType!);
+      },
+
+      getActivityColor: (activity: Activity) => {
+        return getSportColor(activity.sportType!);
       },
     }),
     {

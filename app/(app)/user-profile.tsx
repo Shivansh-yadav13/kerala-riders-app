@@ -1,6 +1,7 @@
 import { useAuthContext } from "@/contexts/AuthProvider";
+import { useActivityStore } from "@/stores/activity";
 import { router } from "expo-router";
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Image,
   ScrollView,
@@ -12,8 +13,73 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+// Helper functions for activity formatting
+const formatDuration = (seconds: number): string => {
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  
+  if (hours > 0) {
+    const remainingMinutes = minutes % 60;
+    return `${hours}h ${remainingMinutes}m`;
+  }
+  return `${minutes}m`;
+};
+
+const formatDistance = (meters: number): string => {
+  const km = meters / 1000;
+  return km < 10 ? km.toFixed(2) : km.toFixed(1);
+};
+
+const formatTime = (dateString: string): string => {
+  const date = new Date(dateString);
+  const now = new Date();
+  
+  // Reset time to start of day for accurate day comparison
+  const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const nowOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  
+  const diffInDays = Math.floor((nowOnly.getTime() - dateOnly.getTime()) / (1000 * 60 * 60 * 24));
+  
+  const timeString = date.toLocaleTimeString('en-US', { 
+    hour: 'numeric', 
+    minute: '2-digit',
+    hour12: true 
+  });
+  
+  if (diffInDays === 0) {
+    return `Today • ${timeString}`;
+  } else if (diffInDays === 1) {
+    return `Yesterday • ${timeString}`;
+  } else if (diffInDays > 1) {
+    return `${diffInDays} days ago • ${timeString}`;
+  } else {
+    // Handle future dates or same day edge cases
+    return `Today • ${timeString}`;
+  }
+};
+
+const getActivityIcon = (sportType: string) => {
+  const type = sportType.toLowerCase();
+  if (type.includes('run')) return require("@/assets/images/icons/running-orange.png");
+  if (type.includes('bike') || type.includes('cycle') || type.includes('ride')) return require("@/assets/images/icons/bicycle-green.png");
+  if (type.includes('walk')) return require("@/assets/images/icons/running-orange.png");
+  if (type.includes('swim')) return require("@/assets/images/icons/bicycle-green.png");
+  if (type.includes('strength') || type.includes('weight') || type.includes('gym')) return require("@/assets/images/icons/running-orange.png");
+  return require("@/assets/images/icons/running-orange.png");
+};
+
+const getActivityIconStyle = (sportType: string) => {
+  const type = sportType.toLowerCase();
+  if (type.includes('run') || type.includes('walk')) return { backgroundColor: "rgba(247, 147, 30, 0.1)" };
+  if (type.includes('bike') || type.includes('cycle') || type.includes('ride')) return { backgroundColor: "rgba(20, 167, 108, 0.1)" };
+  if (type.includes('swim')) return { backgroundColor: "rgba(6, 182, 212, 0.1)" };
+  if (type.includes('strength') || type.includes('weight') || type.includes('gym')) return { backgroundColor: "rgba(139, 92, 246, 0.1)" };
+  return { backgroundColor: "rgba(247, 147, 30, 0.1)" };
+};
+
 export default function UserProfileScreen() {
   const { user } = useAuthContext();
+  const { activities, fetchActivities } = useActivityStore();
 
   // Extract user data with fallbacks
   const userData = user?.user_metadata || {};
@@ -23,6 +89,25 @@ export default function UserProfileScreen() {
   const profileImage =
     userData.avatar_url ||
     "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg";
+
+  // Get user identifier for API calls
+  const getUserIdentifier = (): string => {
+    if (!user?.user_metadata) return '';
+    return user.user_metadata.krid || user.email || '';
+  };
+
+  // Fetch activities on component mount if not already loaded
+  useEffect(() => {
+    const userIdentifier = getUserIdentifier();
+    if (userIdentifier && activities.length === 0) {
+      fetchActivities(userIdentifier, { limit: 10 });
+    }
+  }, [user, activities.length, fetchActivities]);
+
+  // Get recent activities (top 2) sorted by date
+  const recentActivities = activities
+    .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime())
+    .slice(0, 2);
 
   return (
     <SafeAreaView style={styles.container} edges={["left", "right"]}>
@@ -131,43 +216,37 @@ export default function UserProfileScreen() {
           </View>
 
           <View style={styles.activitiesList}>
-            <View style={styles.activityCard}>
-              <View style={styles.activityInfo}>
-                <View style={[styles.activityIcon, styles.bikeIcon]}>
-                  <Image
-                    source={require("@/assets/images/icons/bicycle-green.png")}
-                    style={{ width: 20, height: 20, resizeMode: "contain" }}
-                  />
+            {recentActivities.length > 0 ? (
+              recentActivities.map((activity) => (
+                <View key={activity.id} style={styles.activityCard}>
+                  <View style={styles.activityInfo}>
+                    <View style={[styles.activityIcon, getActivityIconStyle(activity.sportType || 'unknown')]}>
+                      <Image
+                        source={getActivityIcon(activity.sportType || 'unknown')}
+                        style={{ width: 20, height: 20, resizeMode: "contain" }}
+                      />
+                    </View>
+                    <View style={styles.activityDetails}>
+                      <Text style={styles.activityTitle}>{activity.name}</Text>
+                      <Text style={styles.activityTime}>{formatTime(activity.startDateLocal || activity.startDate)}</Text>
+                    </View>
+                  </View>
+                  <View style={styles.activityStats}>
+                    <Text style={styles.activityDistance}>
+                      {activity.distance ? `${formatDistance(activity.distance)} km` : "-"}
+                    </Text>
+                    <Text style={styles.activityDuration}>
+                      {formatDuration(activity.movingTime || 0)}
+                    </Text>
+                  </View>
                 </View>
-                <View style={styles.activityDetails}>
-                  <Text style={styles.activityTitle}>Morning Ride</Text>
-                  <Text style={styles.activityTime}>Today • 7:30 AM</Text>
-                </View>
+              ))
+            ) : (
+              <View style={styles.emptyActivitiesContainer}>
+                <Text style={styles.emptyActivitiesText}>No recent activities</Text>
+                <Text style={styles.emptyActivitiesSubtext}>Start tracking your activities to see them here</Text>
               </View>
-              <View style={styles.activityStats}>
-                <Text style={styles.activityDistance}>15.2 km</Text>
-                <Text style={styles.activityDuration}>45 min</Text>
-              </View>
-            </View>
-
-            <View style={styles.activityCard}>
-              <View style={styles.activityInfo}>
-                <View style={[styles.activityIcon, styles.runIcon]}>
-                  <Image
-                    source={require("@/assets/images/icons/running-orange.png")}
-                    style={{ width: 20, height: 20, resizeMode: "contain" }}
-                  />
-                </View>
-                <View style={styles.activityDetails}>
-                  <Text style={styles.activityTitle}>Evening Run</Text>
-                  <Text style={styles.activityTime}>Yesterday • 6:15 PM</Text>
-                </View>
-              </View>
-              <View style={styles.activityStats}>
-                <Text style={styles.activityDistance}>5.8 km</Text>
-                <Text style={styles.activityDuration}>28 min</Text>
-              </View>
-            </View>
+            )}
           </View>
         </View>
 
@@ -563,5 +642,21 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#666666",
     fontFamily: "Inter",
+  },
+  emptyActivitiesContainer: {
+    alignItems: "center",
+    paddingVertical: 32,
+    paddingHorizontal: 16,
+  },
+  emptyActivitiesText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#9CA3AF",
+    marginBottom: 4,
+  },
+  emptyActivitiesSubtext: {
+    fontSize: 12,
+    color: "#9CA3AF",
+    textAlign: "center",
   },
 });

@@ -15,6 +15,8 @@ interface AuthContextType {
   resetPassword: (email: string) => Promise<any>;
   updateProfile: (updates: any) => Promise<any>;
   refreshSession: () => Promise<void>;
+  refreshStravaToken: () => Promise<any>;
+  checkAndRefreshStravaToken: () => Promise<any>;
   clearError: () => void;
 }
 
@@ -41,6 +43,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const user_metadata = auth.user?.user_metadata;
 
     if (auth.isAuthenticated && auth.user) {
+      console.log("🔍 [AuthProvider] User authenticated, checking Strava token...");
+      console.log("🔍 [AuthProvider] User metadata:", JSON.stringify(auth.user.user_metadata, null, 2));
+      
+      // Check and refresh Strava token if needed
+      auth.checkAndRefreshStravaToken().catch((error) => {
+        console.error("❌ [AuthProvider] Failed to check/refresh Strava token:", error);
+      });
+
       const hasPhoneNumber = user_metadata?.phone_number;
       const isEmailVerified = user_metadata?.is_email_verified;
       const hasDataConsent = user_metadata?.is_data_consent;
@@ -74,6 +84,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     resetPassword: auth.resetPassword,
     updateProfile: auth.updateProfile,
     refreshSession: auth.refreshSession,
+    refreshStravaToken: auth.refreshStravaToken,
+    checkAndRefreshStravaToken: auth.checkAndRefreshStravaToken,
     clearError: auth.clearError,
   };
 
