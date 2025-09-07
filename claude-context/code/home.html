@@ -1,0 +1,318 @@
+<html><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = {
+  "theme": {
+    "extend": {
+      "colors": {
+        "primary": "#252525",
+        "secondary": "#F7F7F7",
+        "accent": "#14A76C",
+        "orange": "#F7931E"
+      },
+      "fontFamily": {
+        "sans": [
+          "Inter",
+          "sans-serif"
+        ]
+      }
+    }
+  }
+};</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    
+    <style>::-webkit-scrollbar { display: none;}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&amp;display=swap"><style>
+      body {
+        font-family: 'Inter', sans-serif !important;
+      }
+      
+      /* Preserve Font Awesome icons */
+      .fa, .fas, .far, .fal, .fab {
+        font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands" !important;
+      }
+    </style><style>
+  .highlighted-section {
+    outline: 2px solid #3F20FB;
+    background-color: rgba(63, 32, 251, 0.1);
+  }
+
+  .edit-button {
+    position: absolute;
+    z-index: 1000;
+  }
+
+  ::-webkit-scrollbar {
+    display: none;
+  }
+
+  html, body {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  </style></head>
+<body class="bg-gray-50 font-sans">
+
+<!-- Header & Welcome Section -->
+<header id="header" class="bg-white px-4 py-6">
+    <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center">
+            <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg" alt="Profile" class="w-12 h-12 rounded-full border-2 border-accent">
+            <div class="ml-3">
+                <h1 class="text-xl font-semibold text-gray-900">Good Morning, Alex 👋</h1>
+                <p class="text-sm text-gray-500">Ready for today's challenge?</p>
+            </div>
+        </div>
+        <button class="relative">
+            <i class="fa-solid fa-bell text-gray-600 text-xl"></i>
+            <span class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
+        </button>
+    </div>
+</header>
+
+<!-- Quick Stats Summary Bar -->
+<section id="quick-stats" class="px-4 pb-6">
+    <div class="grid grid-cols-2 gap-3">
+        <div class="bg-white rounded-lg p-4 border border-gray-200">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-500">Weekly Distance</p>
+                    <p class="text-lg font-semibold text-gray-900">42.5 km</p>
+                </div>
+                <i class="fa-solid fa-route text-accent text-xl"></i>
+            </div>
+        </div>
+        <div class="bg-white rounded-lg p-4 border border-gray-200">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-500">Challenges</p>
+                    <p class="text-lg font-semibold text-gray-900">3 Active</p>
+                </div>
+                <i class="fa-solid fa-trophy text-orange text-xl"></i>
+            </div>
+        </div>
+        <div class="bg-white rounded-lg p-4 border border-gray-200">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-500">Leaderboard</p>
+                    <p class="text-lg font-semibold text-gray-900">#12</p>
+                </div>
+                <i class="fa-solid fa-medal text-accent text-xl"></i>
+            </div>
+        </div>
+        <div class="bg-white rounded-lg p-4 border border-gray-200">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-500">Steps Today</p>
+                    <p class="text-lg font-semibold text-gray-900">8,450</p>
+                </div>
+                <i class="fa-solid fa-walking text-accent text-xl"></i>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Activity Highlights -->
+<section id="activity-highlights" class="px-4 pb-6">
+    <h2 class="text-lg font-semibold text-gray-900 mb-3">Today's Activity</h2>
+    <div class="bg-white rounded-lg p-4 border border-gray-200">
+        <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center">
+                <div class="w-10 h-10 bg-accent rounded-full flex items-center justify-center">
+                    <i class="fa-solid fa-bicycle text-white"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="font-medium text-gray-900">Morning Ride</p>
+                    <p class="text-sm text-gray-500">12.5 km • 35 min</p>
+                </div>
+            </div>
+            <button class="px-3 py-1 bg-accent text-white text-sm font-medium rounded">Share</button>
+        </div>
+        <div class="flex items-center justify-between text-sm text-gray-500">
+            <span>Strava synced</span>
+            <button class="text-accent font-medium">Sync Now</button>
+        </div>
+    </div>
+</section>
+
+<!-- Community Feed Snapshot -->
+<section id="community-feed" class="px-4 pb-6">
+    <div class="flex items-center justify-between mb-3">
+        <h2 class="text-lg font-semibold text-gray-900">Community Feed</h2>
+        <button class="text-accent font-medium text-sm">View All</button>
+    </div>
+    <div class="space-y-3">
+        <div class="bg-white rounded-lg p-4 border border-gray-200">
+            <div class="flex items-center mb-2">
+                <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-2.jpg" alt="User" class="w-8 h-8 rounded-full">
+                <div class="ml-2 flex-1">
+                    <p class="font-medium text-gray-900 text-sm">John completed a 15km run</p>
+                    <p class="text-xs text-gray-500">2 hours ago</p>
+                </div>
+                <div class="flex space-x-2">
+                    <button><i class="fa-solid fa-heart text-gray-400 text-sm"></i></button>
+                    <button><i class="fa-solid fa-comment text-gray-400 text-sm"></i></button>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-lg p-4 border border-gray-200">
+            <div class="flex items-center mb-2">
+                <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-5.jpg" alt="User" class="w-8 h-8 rounded-full">
+                <div class="ml-2 flex-1">
+                    <p class="font-medium text-gray-900 text-sm">Sarah joined Mountain Challenge</p>
+                    <p class="text-xs text-gray-500">4 hours ago</p>
+                </div>
+                <div class="flex space-x-2">
+                    <button><i class="fa-solid fa-heart text-gray-400 text-sm"></i></button>
+                    <button><i class="fa-solid fa-comment text-gray-400 text-sm"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Challenges & Leaderboard Preview -->
+<section id="challenges-preview" class="px-4 pb-6">
+    <div class="flex items-center justify-between mb-3">
+        <h2 class="text-lg font-semibold text-gray-900">Active Challenges</h2>
+        <button class="text-accent font-medium text-sm">Join New</button>
+    </div>
+    <div class="flex space-x-3 overflow-x-auto">
+        <div class="bg-white rounded-lg p-4 border border-gray-200 min-w-[280px]">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="font-medium text-gray-900">100km This Month</h3>
+                <span class="text-xs bg-accent text-white px-2 py-1 rounded">5 days left</span>
+            </div>
+            <div class="mb-3">
+                <div class="flex justify-between text-sm mb-1">
+                    <span class="text-gray-500">Progress</span>
+                    <span class="text-gray-900">67.5 km / 100 km</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="bg-accent h-2 rounded-full" style="width: 67.5%"></div>
+                </div>
+            </div>
+            <p class="text-sm text-gray-500">Rank: #8 of 45 participants</p>
+        </div>
+        <div class="bg-white rounded-lg p-4 border border-gray-200 min-w-[280px]">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="font-medium text-gray-900">Daily Steps Goal</h3>
+                <span class="text-xs bg-orange text-white px-2 py-1 rounded">Today</span>
+            </div>
+            <div class="mb-3">
+                <div class="flex justify-between text-sm mb-1">
+                    <span class="text-gray-500">Progress</span>
+                    <span class="text-gray-900">8,450 / 10,000</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="bg-orange h-2 rounded-full" style="width: 84.5%"></div>
+                </div>
+            </div>
+            <p class="text-sm text-gray-500">Rank: #3 of 28 participants</p>
+        </div>
+    </div>
+</section>
+
+<!-- Upcoming Events -->
+<section id="upcoming-events" class="px-4 pb-6">
+    <h2 class="text-lg font-semibold text-gray-900 mb-3">Upcoming Events</h2>
+    <div class="space-y-3">
+        <div class="bg-white rounded-lg p-4 border border-gray-200">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-accent rounded-lg flex flex-col items-center justify-center">
+                        <span class="text-white text-xs font-medium">MAR</span>
+                        <span class="text-white text-sm font-bold">15</span>
+                    </div>
+                    <div class="ml-3">
+                        <p class="font-medium text-gray-900">Kerala Coastal Ride</p>
+                        <p class="text-sm text-gray-500">Kochi • 50km cycling event</p>
+                    </div>
+                </div>
+                <button class="px-3 py-1 bg-accent text-white text-sm font-medium rounded">Join</button>
+            </div>
+        </div>
+        <div class="bg-white rounded-lg p-4 border border-gray-200">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-orange rounded-lg flex flex-col items-center justify-center">
+                        <span class="text-white text-xs font-medium">MAR</span>
+                        <span class="text-white text-sm font-bold">22</span>
+                    </div>
+                    <div class="ml-3">
+                        <p class="font-medium text-gray-900">Mountain Trail Run</p>
+                        <p class="text-sm text-gray-500">Munnar • 15km trail running</p>
+                    </div>
+                </div>
+                <button class="px-3 py-1 border border-gray-300 text-gray-600 text-sm font-medium rounded">Track</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Corporate Wellness Section -->
+<section id="corporate-wellness" class="px-4 pb-6">
+    <div class="bg-gradient-to-r from-accent to-green-600 rounded-lg p-4 text-white">
+        <div class="flex items-center justify-between mb-2">
+            <h3 class="font-semibold">Kerala Riders Group</h3>
+            <i class="fa-solid fa-building text-white"></i>
+        </div>
+        <p class="text-sm opacity-90 mb-3">Team Challenge: 500km in March</p>
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-xs opacity-75">Team Progress</p>
+                <p class="font-medium">342km / 500km</p>
+            </div>
+            <button class="bg-white text-accent px-3 py-1 text-sm font-medium rounded">View Details</button>
+        </div>
+    </div>
+</section>
+
+<!-- Announcements Banner -->
+<section id="announcements" class="px-4 pb-20">
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+        <div class="flex items-start">
+            <i class="fa-solid fa-info-circle text-blue-500 mt-0.5"></i>
+            <div class="ml-2 flex-1">
+                <p class="text-sm font-medium text-blue-900">New Feature Alert!</p>
+                <p class="text-xs text-blue-700">Activity sharing with Instagram Stories is now available.</p>
+            </div>
+            <button class="text-blue-500 text-xs">Dismiss</button>
+        </div>
+    </div>
+</section>
+
+<!-- Floating Action Button -->
+<button id="fab" class="fixed bottom-20 right-4 w-14 h-14 bg-accent rounded-full shadow-lg flex items-center justify-center z-20">
+    <i class="fa-solid fa-plus text-white text-xl"></i>
+</button>
+
+<!-- Bottom Navigation -->
+<nav id="footer" class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2">
+    <div class="flex justify-around items-center">
+        <button class="flex flex-col items-center py-2">
+            <i class="fa-solid fa-home text-accent text-lg mb-1"></i>
+            <span class="text-xs text-accent font-medium">Home</span>
+        </button>
+        <button class="flex flex-col items-center py-2">
+            <i class="fa-solid fa-chart-line text-gray-400 text-lg mb-1"></i>
+            <span class="text-xs text-gray-400">Activities</span>
+        </button>
+        <button class="flex flex-col items-center py-2">
+            <i class="fa-solid fa-building text-gray-400 text-lg mb-1"></i>
+            <span class="text-xs text-gray-400">Corporate</span>
+        </button>
+        <button class="flex flex-col items-center py-2">
+            <i class="fa-solid fa-user text-gray-400 text-lg mb-1"></i>
+            <span class="text-xs text-gray-400">Profile</span>
+        </button>
+        <button class="flex flex-col items-center py-2">
+            <i class="fa-solid fa-cog text-gray-400 text-lg mb-1"></i>
+            <span class="text-xs text-gray-400">Settings</span>
+        </button>
+    </div>
+</nav>
+
+
+</body></html>

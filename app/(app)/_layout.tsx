@@ -42,6 +42,7 @@ export default function AppLayout() {
         name="home"
         options={{
           title: "Home",
+          headerShown: false,
           tabBarIcon: ({ focused }) => (
             <Image
               source={require("@/assets/images/icons/home-green.png")}
@@ -111,6 +112,50 @@ export default function AppLayout() {
                   <Ionicons name="person" size={20} color="#6B7280" />
                 </View>
               )}
+            </TouchableOpacity>
+          ),
+          tabBarIcon: ({ focused }) => (
+            <Image
+              source={require("@/assets/images/icons/dumbbell.png")}
+              style={{
+                width: 20,
+                height: 20,
+                tintColor: focused ? "#14A76C" : "#9CA3AF",
+                resizeMode: "contain",
+              }}
+            />
+          ),
+          tabBarHideOnKeyboard: true,
+          tabBarStyle: {},
+        }}
+      />
+      <Tabs.Screen
+        name="events"
+        options={{
+          href: null,
+          title: "Profile",
+          headerTitleStyle: {
+            fontSize: 18,
+            fontWeight: "600",
+            color: "#000",
+          },
+          headerStyle: {
+            backgroundColor: "#FFFFFF",
+          },
+          headerTitleAlign: "center",
+          headerShadowVisible: false,
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => {
+                if (router.canGoBack()) {
+                  router.back();
+                } else {
+                  router.replace("/(app)/user-profile");
+                }
+              }}
+              style={{ paddingLeft: 16, paddingRight: 8 }}
+            >
+              <Ionicons name="arrow-back" size={24} color="#000" />
             </TouchableOpacity>
           ),
           tabBarIcon: ({ focused }) => (
@@ -291,6 +336,80 @@ export default function AppLayout() {
           tabBarHideOnKeyboard: true,
           tabBarStyle: {},
           href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="create-event"
+        options={{
+          href: null,
+          title: "Create Event",
+          headerTitleStyle: {
+            fontSize: 18,
+            fontWeight: "600",
+            color: "#000",
+          },
+          headerStyle: {
+            backgroundColor: "#FFFFFF",
+          },
+          headerTitleAlign: "center",
+          headerShadowVisible: false,
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => {
+                if (router.canGoBack()) {
+                  router.back();
+                } else {
+                  router.replace("/(app)/user-profile");
+                }
+              }}
+              style={{ paddingLeft: 16, paddingRight: 8 }}
+            >
+              <Ionicons name="arrow-back" size={24} color="#000" />
+            </TouchableOpacity>
+          ),
+          tabBarIcon: ({ focused }) => (
+            <Image
+              source={require("@/assets/images/icons/user.png")}
+              style={{
+                width: 20,
+                height: 20,
+                tintColor: focused ? "#14A76C" : "#9CA3AF",
+                resizeMode: "contain",
+              }}
+            />
+          ),
+          tabBarHideOnKeyboard: true,
+          tabBarStyle: {},
+        }}
+      />
+      <Tabs.Screen
+        name="event-details"
+        options={{
+          title: "Event Details",
+          headerTitleStyle: {
+            fontSize: 18,
+            fontWeight: "600",
+            color: "#000",
+          },
+          headerStyle: {
+            backgroundColor: "#FFFFFF",
+          },
+          headerTitleAlign: "center",
+          headerShadowVisible: false,
+          headerShown: false,
+          tabBarIcon: ({ focused }) => (
+            <Image
+              source={require("@/assets/images/icons/calendar-orange.png")}
+              style={{
+                width: 20,
+                height: 20,
+                tintColor: focused ? "#14A76C" : "#9CA3AF",
+                resizeMode: "contain",
+              }}
+            />
+          ),
+          tabBarHideOnKeyboard: true,
+          tabBarStyle: {},
         }}
       />
     </Tabs>

@@ -1,14 +1,17 @@
 import { formatDuration } from "@/lib/units";
 import { useAuthStore } from "@/stores/auth";
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import React, { useState } from "react";
 import {
   Image,
+  Modal,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -112,6 +115,7 @@ export default function ActivitiesScreen() {
   const { user } = useAuthStore();
   const [selectedFilter, setSelectedFilter] = useState('All');
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
+  const [showActionSheet, setShowActionSheet] = useState(false);
 
   const toggleLike = (postId: string) => {
     setLikedPosts(prev => {
@@ -123,6 +127,16 @@ export default function ActivitiesScreen() {
       }
       return newSet;
     });
+  };
+
+  const handleCreateEvent = () => {
+    setShowActionSheet(false);
+    router.push('/(app)/create-event');
+  };
+
+  const handleCreateActivity = () => {
+    setShowActionSheet(false);
+    router.push('/(app)/add-activity');
   };
 
   const renderFeedCard = (item: ActivityFeedItem) => {
@@ -361,9 +375,72 @@ export default function ActivitiesScreen() {
       </ScrollView>
 
       {/* Floating Action Button */}
-      <TouchableOpacity style={styles.fab}>
+      <TouchableOpacity 
+        style={styles.fab}
+        onPress={() => setShowActionSheet(true)}
+      >
         <Ionicons name="add" size={24} color="#FFFFFF" />
       </TouchableOpacity>
+
+      {/* Action Sheet Modal */}
+      <Modal
+        visible={showActionSheet}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowActionSheet(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setShowActionSheet(false)}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback>
+              <View style={styles.actionSheet}>
+                <View style={styles.actionSheetHeader}>
+                  <Text style={styles.actionSheetTitle}>Create New</Text>
+                  <TouchableOpacity
+                    onPress={() => setShowActionSheet(false)}
+                    style={styles.closeButton}
+                  >
+                    <Ionicons name="close" size={24} color="#6B7280" />
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.actionOptions}>
+                  <TouchableOpacity
+                    style={styles.actionOption}
+                    onPress={handleCreateEvent}
+                  >
+                    <View style={styles.actionIconContainer}>
+                      <Ionicons name="calendar" size={24} color="#3B82F6" />
+                    </View>
+                    <View style={styles.actionContent}>
+                      <Text style={styles.actionTitle}>Create Event</Text>
+                      <Text style={styles.actionDescription}>
+                        Organize a group activity that others can join
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.actionOption}
+                    onPress={handleCreateActivity}
+                  >
+                    <View style={styles.actionIconContainer}>
+                      <Ionicons name="fitness" size={24} color="#14A76C" />
+                    </View>
+                    <View style={styles.actionContent}>
+                      <Text style={styles.actionTitle}>Log Activity</Text>
+                      <Text style={styles.actionDescription}>
+                        Record a workout or training session
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -760,5 +837,66 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 8,
     elevation: 8,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end",
+  },
+  actionSheet: {
+    backgroundColor: "#FFFFFF",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: 20,
+  },
+  actionSheetHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E5E7EB",
+  },
+  actionSheetTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#111827",
+  },
+  closeButton: {
+    padding: 4,
+  },
+  actionOptions: {
+    paddingTop: 8,
+  },
+  actionOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+  },
+  actionIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "#F3F4F6",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 16,
+  },
+  actionContent: {
+    flex: 1,
+  },
+  actionTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#111827",
+    marginBottom: 4,
+  },
+  actionDescription: {
+    fontSize: 14,
+    color: "#6B7280",
+    lineHeight: 20,
   },
 });
